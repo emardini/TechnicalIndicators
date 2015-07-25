@@ -41,16 +41,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adx.cs" />
-    <Compile Include="BidAskCandle.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Candle.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Ema.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Indicators.cs" />
-    <Compile Include="InstrumentHistory.cs" />
     <Compile Include="MovingAverage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rate.cs">

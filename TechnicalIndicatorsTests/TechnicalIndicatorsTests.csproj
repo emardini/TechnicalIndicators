@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdxTest.cs" />
     <Compile Include="EmaTest.cs" />
     <Compile Include="SmaTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

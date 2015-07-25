@@ -48,12 +48,14 @@ namespace TechnicalIndicators
 
         protected void EnsureMaxBufferSize()
         {
-            if (SourceValues.Count() <= MaxNbOfItems)
+            var nbItemsToRemove = SourceValues.Count() - MaxNbOfItems;
+            if (nbItemsToRemove <= 0)
             {
                 return;
             }
-            this.sourceValues.RemoveAt(0);
-            this.values.RemoveAt(0);
+
+            this.sourceValues.RemoveRange(0, nbItemsToRemove);
+            this.values.RemoveRange(0, nbItemsToRemove);
         }
 
         protected void AddValue(decimal value)

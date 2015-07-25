@@ -2,58 +2,93 @@
 {
     using System;
 
+
     public class Candle
     {
-        public DateTime Time { get; set; }
+        private readonly decimal open;
 
-        public decimal OpenBid { get; set; }
+        private readonly decimal close;
 
-        public decimal HighBid { get; set; }
+        private readonly decimal low;
 
-        public decimal LowBid { get; set; }
+        private readonly decimal high;
 
-        public decimal CloseBid { get; set; }
+        public Candle():this(0,0,0,0){}
 
-        public decimal OpenAsk { get; set; }
-
-        public decimal HighAsk { get; set; }
-
-        public decimal LowAsk { get; set; }
-
-        public decimal CloseAsk { get; set; }
-
-        public bool IsAskDown
+        public Candle(decimal open, decimal close, decimal low, decimal high)
         {
-            get { return this.CloseAsk <= this.OpenAsk; }
+            if (open < 0)
+            {
+                throw new ArgumentOutOfRangeException("open", "Cannot be negative");
+            }
+
+            if (close < 0)
+            {
+                throw new ArgumentOutOfRangeException("close", "Cannot be negative");
+            }
+
+            if (high < 0)
+            {
+                throw new ArgumentOutOfRangeException("high", "Cannot be negative");
+            }
+
+            if (low < 0)
+            {
+                throw new ArgumentOutOfRangeException("low", "Cannot be negative");
+            }
+
+            if (low > high)
+            {
+                throw new ArgumentException("Low cannot be greater than high");
+            }
+
+            this.open = open;
+            this.close = close;
+            this.low = low;
+            this.high = high;
+
+            if (BodyRange > FullRange)
+            {
+                throw new ArgumentException("The body range cannot be greater than the full range");
+            }
         }
 
-        public bool IsAskUp
+        public decimal Open { get { return open; }  }
+
+        public decimal High { get { return high; } }
+
+        public decimal Low { get { return low; } }
+
+        public decimal Close { get { return close; } }
+
+        public decimal FullRange
         {
-            get { return this.CloseAsk > this.OpenAsk; }
+            get { return High - Low; }
         }
 
-        public bool IsBidDown
+        public decimal BodyRange
         {
-            get { return this.CloseBid > this.OpenBid; }
+            get { return Math.Abs(open - close); }
         }
 
-        public bool IsBidUp
+        public bool IsDown
         {
-            get { return this.CloseBid <= this.OpenBid; }
+            get { return this.Close <= this.Open; }
         }
 
-        public bool IsAskReversal(Threshold threshold)
+        public bool IsUp
+        {
+            get { return this.Close > this.Open; }
+        }
+
+        public bool IsReversal(Threshold threshold)
         {
             if (threshold == null)
             {
                 throw new ArgumentNullException("threshold");
             }
 
-            if (CloseAsk - OpenAsk <= threshold.Delta) return true;
-
-            if(CloseAsk - OpenAsk < threshold.Body * (HighAsk - LowAsk))  return true;
-
-            return false;
+            return (Close - Open <= threshold.Delta);
         }
     }
 }
