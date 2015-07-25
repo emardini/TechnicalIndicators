@@ -58,14 +58,21 @@
 
         public void Add(Candle value)
         {
+            if (!sourceValues.Any())
+            {
+                sourceValues.Add(value);
+                return;
+            }
+
             var lastValue = sourceValues.LastOrDefault() ?? new Candle();
 
-            var upMove = value.High - lastValue.High;
-            var upDm = upMove > 0 ? upMove : 0;
-            upDms.Add(upDm);
-
+            var upMove = value.High - lastValue.High;                       
             var downMove = lastValue.Low - value.Low;
-            var downDm = downMove > 0 ? downMove : 0;
+
+            var upDm = upMove > 0 && upMove > downMove ? upMove : 0;
+            var downDm = downMove > 0 && downMove > upMove ? downMove : 0;
+
+            this.upDms.Add(upDm);
             downDms.Add(downDm);
 
             var trueRange = GetTrueRange(value, lastValue);
@@ -77,7 +84,7 @@
             {
                 acumDownDm = downDms.Sum();
 
-                acumUpDm = upDms.Sum();
+                acumUpDm = this.upDms.Sum();
 
                 acumTrueRange = trueRanges.Sum();
             }
@@ -108,6 +115,16 @@
         public IEnumerable<decimal> Values { get { return values; } }
 
         public IEnumerable<Candle> SourceValues { get { return sourceValues; } }
+
+        public IEnumerable<decimal> UpDms
+        {
+            get { return this.upDms; }
+        }
+
+        public IEnumerable<decimal> DownDms
+        {
+            get { return this.downDms; }
+        }
 
         protected void EnsureMaxBufferSize()
         {
