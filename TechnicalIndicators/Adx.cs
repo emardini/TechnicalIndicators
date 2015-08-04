@@ -72,15 +72,9 @@
             var upDm = upMove > 0 && upMove > downMove ? upMove : 0;
             var downDm = downMove > 0 && downMove > upMove ? downMove : 0;
 
-            this.upDms.Add(upDm);
-            downDms.Add(downDm);
-
             var trueRange = GetTrueRange(value, lastValue);
-            trueRanges.Add(trueRange);
 
-            sourceValues.Add(value);
-
-            if (sourceValues.Count() < period)
+            if (sourceValues.Count() <= period)
             {
                 acumDownDm = downDms.Sum();
 
@@ -99,17 +93,23 @@
                 acumTrueRange = acumTrueRange*smoothing + trueRange;
             }
 
-            var downDi = acumDownDm / acumTrueRange;
-            downDis.Add(downDi);
+            upDms.Add(upDm);
+            downDms.Add(downDm);
+            trueRanges.Add(trueRange);
 
-            var upDi = acumUpDm / acumTrueRange;
-            upDis.Add(upDi);
+            sourceValues.Add(value);
 
-            var dx = Math.Abs(upDi - downDi) / (upDi + downDi);
-            dxs.Add(dx);
+            //var downDi = acumDownDm / acumTrueRange;
+            //downDis.Add(downDi);
 
-            var adx = dxs.TakeLast(period).Average()*100m;
-            values.Add(adx);
+            //var upDi = acumUpDm / acumTrueRange;
+            //upDis.Add(upDi);
+
+            //var dx = Math.Abs(upDi - downDi) / (upDi + downDi);
+            //dxs.Add(dx);
+
+            //var adx = dxs.TakeLast(period).Average()*100m;
+            //values.Add(adx);
         }
 
         public IEnumerable<decimal> Values { get { return values; } }

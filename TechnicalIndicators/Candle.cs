@@ -13,9 +13,9 @@
 
         private readonly decimal high;
 
-        public Candle():this(0,0,0,0){}
+        public Candle():this(0,0, 0, 0){}
 
-        public Candle(decimal open, decimal close, decimal low, decimal high)
+        public Candle(decimal open, decimal high, decimal low, decimal close)
         {
             if (open < 0)
             {
