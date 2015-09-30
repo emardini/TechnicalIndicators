@@ -93,9 +93,9 @@
             adx.TrueRangesAccum.Last().Should().BeApproximately(43.32m, 0.01m);
             adx.UpDmAccum.Last().Should().BeApproximately(8.82m, 0.01m);
             adx.DownDmAccum.Last().Should().BeApproximately(15.75m, 0.01m);
-            adx.UpDIAccum.Last().Should().Be(20);
-            adx.DownDIAccum.Last().Should().Be(36);
-            adx.Dxs.Last().Should().Be(29);
+            adx.UpDIAccum.Last().Should().BeApproximately(.2036m, 0.01m);
+            adx.DownDIAccum.Last().Should().BeApproximately(0.3635m, 0.01m);
+            adx.Dxs.Last().Should().BeApproximately(0.28m, 0.01m);
         }
 
         [Test]
@@ -123,9 +123,9 @@
             adx.TrueRangesAccum.Last().Should().BeApproximately(42.98m, 0.01m);
             adx.UpDmAccum.Last().Should().BeApproximately(8.19m, 0.01m);
             adx.DownDmAccum.Last().Should().BeApproximately(16.37m, 0.01m);
-            adx.UpDIAccum.Last().Should().Be(19);
-            adx.DownDIAccum.Last().Should().Be(38);
-            adx.Dxs.Last().Should().Be(33);
+            adx.UpDIAccum.Last().Should().BeApproximately(.1905m, 0.01m);
+            adx.DownDIAccum.Last().Should().BeApproximately(.38m, 0.01m);
+            adx.Dxs.Last().Should().BeApproximately(0.33m, 0.01m);
         }
 
 
@@ -152,7 +152,7 @@
             adx.Add(new Candle(263.25m, 264m, 261.5m, 264m));
             adx.Add(new Candle(267m, 268m, 266.25m, 266.5m));
 
-            adx.Dxs.Last().Should().Be(15);
+            adx.Dxs.Last().Should().BeApproximately(0.13m, 0.01m);
         }
 
 
@@ -191,7 +191,7 @@
             adx.Add(new Candle(262m, 264.75m, 261.5m, 262.75m));
             adx.Add(new Candle(260m, 261m, 255.5m, 255.5m));
 
-            adx.Values.Last().Should().Be(16);
+            adx.Values.Last().Should().BeApproximately(0.15m, 0.01m);
         }
 
 
@@ -230,7 +230,7 @@
             adx.Add(new Candle(260m, 261m, 255.5m, 255.5m));
             adx.Add(new Candle(255m, 257.5m, 253m, 253m));
 
-            adx.Values.Last().Should().Be(17);
+            adx.Values.Last().Should().BeApproximately(0.16m, 0.01m);
         }
 
         #endregion

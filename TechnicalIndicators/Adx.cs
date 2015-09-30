@@ -18,15 +18,13 @@
 
         #region Fields
 
-        private readonly List<int> adx;
-
-        private readonly List<int> downDIAccum;
+        private readonly List<decimal> downDIAccum;
 
         private readonly List<decimal> downDmAccum;
 
         private readonly List<decimal> downDms;
 
-        private readonly List<int> dxs;
+        private readonly List<decimal> dxs;
 
         private readonly int period;
 
@@ -36,13 +34,13 @@
 
         private readonly List<decimal> trueRangesAccum;
 
-        private readonly List<int> upDIAccum;
+        private readonly List<decimal> upDIAccum;
 
         private readonly List<decimal> upDmAccum;
 
         private readonly List<decimal> upDms;
 
-        private readonly List<int> values;
+        private readonly List<decimal> values;
 
         #endregion
 
@@ -57,7 +55,7 @@
         {
             this.period = period;
 
-            this.values = new List<int>();
+            this.values = new List<decimal>();
             this.trueRanges = new List<decimal>();
             this.sourceValues = new List<Candle>();
             this.downDms = new List<decimal>();
@@ -66,17 +64,17 @@
             this.trueRangesAccum = new List<decimal>();
             this.upDmAccum = new List<decimal>();
             this.downDmAccum = new List<decimal>();
-            this.upDIAccum = new List<int>();
-            this.downDIAccum = new List<int>();
+            this.upDIAccum = new List<decimal>();
+            this.downDIAccum = new List<decimal>();
 
-            this.dxs = new List<int>();
+            this.dxs = new List<decimal>();
         }
 
         #endregion
 
         #region Public Properties
 
-        public IEnumerable<int> DownDIAccum
+        public IEnumerable<decimal> DownDIAccum
         {
             get { return this.downDIAccum; }
         }
@@ -90,7 +88,7 @@
         {
             get { return this.downDms; }
         }
-        public IEnumerable<int> Dxs
+        public IEnumerable<decimal> Dxs
         {
             get { return this.dxs; }
         }
@@ -110,7 +108,7 @@
             get { return this.trueRangesAccum; }
         }
 
-        public IEnumerable<int> UpDIAccum
+        public IEnumerable<decimal> UpDIAccum
         {
             get { return this.upDIAccum; }
         }
@@ -123,7 +121,7 @@
         {
             get { return this.upDms; }
         }
-        public IEnumerable<int> Values
+        public IEnumerable<decimal> Values
         {
             get { return this.values; }
         }
@@ -174,21 +172,21 @@
                 var currentDownDm = previousDownDm - (previousDownDm / this.period) + downDm;
                 this.downDmAccum.Add(currentDownDm);
 
-                this.upDIAccum.Add((int)Math.Round(100m * this.upDmAccum.Last() / this.trueRangesAccum.Last()));
-                this.downDIAccum.Add((int)Math.Round(100m * this.downDmAccum.Last() / this.trueRangesAccum.Last()));
+                this.upDIAccum.Add(this.upDmAccum.Last() / this.trueRangesAccum.Last());
+                this.downDIAccum.Add(this.downDmAccum.Last() / this.trueRangesAccum.Last());
 
-                var dx = 100m * Math.Abs(this.upDIAccum.Last() - this.downDIAccum.Last()) / (this.upDIAccum.Last() + this.downDIAccum.Last());
-                this.dxs.Add((int)Math.Round(dx));
+                var dx = Math.Abs(this.upDIAccum.Last() - this.downDIAccum.Last()) / (this.upDIAccum.Last() + this.downDIAccum.Last());
+                this.dxs.Add(dx);
             }
 
             if (this.dxs.Count == this.period)
             {
-                this.values.Add((int)Math.Round(this.dxs.Average()));
+                this.values.Add(this.dxs.Average());
             }
             else if (this.dxs.Count > this.period)
             {
                 var dxsAccum = (this.values.Last() * (this.period - 1) + this.dxs.Last()) / (decimal)this.period;
-                this.values.Add((int)Math.Round(dxsAccum));
+                this.values.Add(dxsAccum);
             }
 
             this.sourceValues.Add(value);
@@ -197,18 +195,6 @@
         #endregion
 
         #region Methods
-
-        protected void EnsureMaxBufferSize()
-        {
-            var nbItemsToRemove = MaxNbOfItems - this.sourceValues.Count();
-            if (nbItemsToRemove <= 0)
-            {
-                return;
-            }
-
-            this.sourceValues.RemoveRange(0, nbItemsToRemove);
-            this.values.RemoveRange(0, nbItemsToRemove);
-        }
 
         private static decimal GetTrueRange(Candle current, Candle previous)
         {
