@@ -6,6 +6,26 @@ namespace TechnicalIndicators
 
     public abstract class MovingAverage
     {
+        #region Constants
+
+        protected const int MaxNbOfItems = 5000;
+
+        protected const int MaxPeriod = 200;
+
+        #endregion
+
+        #region Fields
+
+        private readonly int period;
+
+        private readonly List<decimal> sourceValues;
+
+        private readonly List<decimal> values;
+
+        #endregion
+
+        #region Constructors and Destructors
+
         protected MovingAverage(int period)
         {
             if (period > MaxPeriod)
@@ -18,52 +38,31 @@ namespace TechnicalIndicators
             this.values = new List<decimal>();
         }
 
-        protected const int MaxNbOfItems = 5000;
+        #endregion
 
-        protected const int MaxPeriod = 200;
+        #region Public Properties
 
-        private readonly int period;
-
-        protected int Period
+        public IEnumerable<decimal> SourceValues
         {
-            get { return period; }
+            get { return this.sourceValues; }
         }
-      
-        private readonly List<decimal> values;
         public IEnumerable<decimal> Values
         {
             get { return this.values; }
         }
 
-        private readonly List<decimal> sourceValues;
-        public IEnumerable<decimal> SourceValues
+        #endregion
+
+        #region Properties
+
+        protected int Period
         {
-            get { return this.sourceValues; }
+            get { return this.period; }
         }
 
-        protected void AddSourceValue(decimal value)
-        {
-            sourceValues.Add(value);
-        }
+        #endregion
 
-        protected void EnsureMaxBufferSize()
-        {
-            var nbItemsToRemove = SourceValues.Count() - MaxNbOfItems;
-            if (nbItemsToRemove <= 0)
-            {
-                return;
-            }
-
-            this.sourceValues.RemoveRange(0, nbItemsToRemove);
-            this.values.RemoveRange(0, nbItemsToRemove);
-        }
-
-        protected void AddValue(decimal value)
-        {
-            values.Add(value);
-        }
-
-        protected abstract void InternalAdd(decimal value);
+        #region Public Methods and Operators
 
         public void Add(decimal value)
         {
@@ -84,5 +83,35 @@ namespace TechnicalIndicators
                 this.Add(value);
             }
         }
+
+        #endregion
+
+        #region Methods
+
+        protected void AddSourceValue(decimal value)
+        {
+            this.sourceValues.Add(value);
+        }
+
+        protected void AddValue(decimal value)
+        {
+            this.values.Add(value);
+        }
+
+        protected void EnsureMaxBufferSize()
+        {
+            var nbItemsToRemove = this.SourceValues.Count() - MaxNbOfItems;
+            if (nbItemsToRemove <= 0)
+            {
+                return;
+            }
+
+            this.sourceValues.RemoveRange(0, nbItemsToRemove);
+            this.values.RemoveRange(0, nbItemsToRemove);
+        }
+
+        protected abstract void InternalAdd(decimal value);
+
+        #endregion
     }
 }

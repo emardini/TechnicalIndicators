@@ -2,18 +2,25 @@
 {
     using System;
 
-
     public class Candle
     {
-        private readonly decimal open;
+        #region Fields
 
         private readonly decimal close;
 
-        private readonly decimal low;
-
         private readonly decimal high;
 
-        public Candle():this(0,0, 0, 0){}
+        private readonly decimal low;
+
+        private readonly decimal open;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        public Candle() : this(0, 0, 0, 0)
+        {
+        }
 
         public Candle(decimal open, decimal high, decimal low, decimal close)
         {
@@ -47,28 +54,33 @@
             this.low = low;
             this.high = high;
 
-            if (BodyRange > FullRange)
+            if (this.BodyRange > this.FullRange)
             {
                 throw new ArgumentException("The body range cannot be greater than the full range");
             }
         }
 
-        public decimal Open { get { return open; }  }
+        #endregion
 
-        public decimal High { get { return high; } }
-
-        public decimal Low { get { return low; } }
-
-        public decimal Close { get { return close; } }
-
-        public decimal FullRange
-        {
-            get { return High - Low; }
-        }
+        #region Public Properties
 
         public decimal BodyRange
         {
-            get { return Math.Abs(open - close); }
+            get { return Math.Abs(this.open - this.close); }
+        }
+
+        public decimal Close
+        {
+            get { return this.close; }
+        }
+
+        public decimal FullRange
+        {
+            get { return this.High - this.Low; }
+        }
+        public decimal High
+        {
+            get { return this.high; }
         }
 
         public bool IsDown
@@ -80,6 +92,18 @@
         {
             get { return this.Close > this.Open; }
         }
+        public decimal Low
+        {
+            get { return this.low; }
+        }
+        public decimal Open
+        {
+            get { return this.open; }
+        }
+
+        #endregion
+
+        #region Public Methods and Operators
 
         public bool IsReversal(Threshold threshold)
         {
@@ -88,7 +112,9 @@
                 throw new ArgumentNullException("threshold");
             }
 
-            return (Close - Open <= threshold.Delta);
+            return (this.Close - this.Open <= threshold.Delta);
         }
+
+        #endregion
     }
 }

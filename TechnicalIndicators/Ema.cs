@@ -24,7 +24,9 @@
         protected override void InternalAdd(decimal value)
         {
             this.AddSourceValue(value);
-            var newValue = SourceValues.Count() == 1 ? value :  value * this.smoothingFactor + this.Values.LastOrDefault() * (1m - this.smoothingFactor);
+            var newValue = this.SourceValues.Count() == 1
+                ? value
+                : value * this.smoothingFactor + this.Values.LastOrDefault() * (1m - this.smoothingFactor);
             this.AddValue(newValue);
         }
 

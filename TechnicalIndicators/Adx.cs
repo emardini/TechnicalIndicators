@@ -8,65 +8,141 @@
     //Or http://www.theforexguy.com/average-directional-index-indicator/
     public class Adx
     {
-        private readonly int period;
-
-        private readonly List<decimal> values;
-
-        private readonly List<decimal> upDms;
-        private readonly List<decimal> downDms;
-
-        private readonly List<decimal> upDis;
-        private readonly List<decimal> downDis;
-        private readonly List<decimal> dxs;
-
-        private readonly List<decimal> trueRanges;
-
-        public IEnumerable<decimal> TrueRanges { get { return trueRanges; } } 
+        #region Constants
 
         protected const int MaxNbOfItems = 5000;
 
         protected const int MaxPeriod = 200;
 
+        #endregion
+
+        #region Fields
+
+        private readonly List<int> adx;
+
+        private readonly List<int> downDIAccum;
+
+        private readonly List<decimal> downDmAccum;
+
+        private readonly List<decimal> downDms;
+
+        private readonly List<int> dxs;
+
+        private readonly int period;
+
         private readonly List<Candle> sourceValues;
 
-        private decimal acumUpDm;
-        private decimal acumTrueRange;
-        private decimal acumDownDm;
+        private readonly List<decimal> trueRanges;
+
+        private readonly List<decimal> trueRangesAccum;
+
+        private readonly List<int> upDIAccum;
+
+        private readonly List<decimal> upDmAccum;
+
+        private readonly List<decimal> upDms;
+
+        private readonly List<int> values;
+
+        #endregion
+
+        #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Adx"/> class.
-        /// The Adx is implemented following the classical approach with simple moving average
+        ///     Initializes a new instance of the <see cref="Adx" /> class.
+        ///     The Adx is implemented following the classical approach with simple moving average
         /// </summary>
         /// <param name="period">The period.</param>
         public Adx(int period)
         {
             this.period = period;
 
-            this.values = new List<decimal>();
+            this.values = new List<int>();
             this.trueRanges = new List<decimal>();
             this.sourceValues = new List<Candle>();
             this.downDms = new List<decimal>();
             this.upDms = new List<decimal>();
-            this.downDis = new List<decimal>();
-            this.upDis = new List<decimal>();
-            this.dxs = new List<decimal>();
 
-            acumDownDm = 0;
-            acumUpDm = 0;
-            acumTrueRange = 0;
+            this.trueRangesAccum = new List<decimal>();
+            this.upDmAccum = new List<decimal>();
+            this.downDmAccum = new List<decimal>();
+            this.upDIAccum = new List<int>();
+            this.downDIAccum = new List<int>();
+
+            this.dxs = new List<int>();
         }
+
+        #endregion
+
+        #region Public Properties
+
+        public IEnumerable<int> DownDIAccum
+        {
+            get { return this.downDIAccum; }
+        }
+
+        public IEnumerable<decimal> DownDmAccum
+        {
+            get { return this.downDmAccum; }
+        }
+
+        public IEnumerable<decimal> DownDms
+        {
+            get { return this.downDms; }
+        }
+        public IEnumerable<int> Dxs
+        {
+            get { return this.dxs; }
+        }
+
+        public IEnumerable<Candle> SourceValues
+        {
+            get { return this.sourceValues; }
+        }
+
+        public IEnumerable<decimal> TrueRanges
+        {
+            get { return this.trueRanges; }
+        }
+
+        public IEnumerable<decimal> TrueRangesAccum
+        {
+            get { return this.trueRangesAccum; }
+        }
+
+        public IEnumerable<int> UpDIAccum
+        {
+            get { return this.upDIAccum; }
+        }
+        public IEnumerable<decimal> UpDmAccum
+        {
+            get { return this.upDmAccum; }
+        }
+
+        public IEnumerable<decimal> UpDms
+        {
+            get { return this.upDms; }
+        }
+        public IEnumerable<int> Values
+        {
+            get { return this.values; }
+        }
+
+        #endregion
+
+        #region Public Methods and Operators
 
         public void Add(Candle value)
         {
-            if (!sourceValues.Any())
+            if (!this.sourceValues.Any())
             {
-                sourceValues.Add(value);
+                this.sourceValues.Add(value);
                 return;
             }
 
-            var lastValue = sourceValues.LastOrDefault() ?? new Candle();
+            var lastValue = this.sourceValues.LastOrDefault() ?? new Candle();
 
-            var upMove = value.High - lastValue.High;                       
+            var upMove = value.High - lastValue.High;
             var downMove = lastValue.Low - value.Low;
 
             var upDm = upMove > 0 && upMove > downMove ? upMove : 0;
@@ -74,61 +150,57 @@
 
             var trueRange = GetTrueRange(value, lastValue);
 
-            if (sourceValues.Count() <= period)
+            this.upDms.Add(upDm);
+            this.downDms.Add(downDm);
+            this.trueRanges.Add(trueRange);
+            if (this.trueRanges.Count < this.period)
             {
-                acumDownDm = downDms.Sum();
-
-                acumUpDm = this.upDms.Sum();
-
-                acumTrueRange = trueRanges.Sum();
+                this.trueRangesAccum.Add(this.trueRanges.TakeLast(this.period).Sum());
+                this.upDmAccum.Add(this.upDms.TakeLast(this.period).Sum());
+                this.downDmAccum.Add(this.downDms.TakeLast(this.period).Sum());
             }
             else
             {
-                var smoothing = ((period - 1m) / period);
+                //Just add the ups and downs with the same technique
+                var previousTr = this.trueRangesAccum.Last();
+                var currentTr = previousTr - (previousTr / this.period) + trueRange;
+                this.trueRangesAccum.Add(currentTr);
 
-                acumDownDm = acumDownDm*smoothing + downDm;
+                var previousUpDm = this.upDmAccum.Last();
+                var currentUpDm = previousUpDm - (previousUpDm / this.period) + upDm;
+                this.upDmAccum.Add(currentUpDm);
 
-                acumUpDm = acumUpDm * smoothing + upDm;
+                var previousDownDm = this.downDmAccum.Last();
+                var currentDownDm = previousDownDm - (previousDownDm / this.period) + downDm;
+                this.downDmAccum.Add(currentDownDm);
 
-                acumTrueRange = acumTrueRange*smoothing + trueRange;
+                this.upDIAccum.Add((int)Math.Round(100m * this.upDmAccum.Last() / this.trueRangesAccum.Last()));
+                this.downDIAccum.Add((int)Math.Round(100m * this.downDmAccum.Last() / this.trueRangesAccum.Last()));
+
+                var dx = 100m * Math.Abs(this.upDIAccum.Last() - this.downDIAccum.Last()) / (this.upDIAccum.Last() + this.downDIAccum.Last());
+                this.dxs.Add((int)Math.Round(dx));
             }
 
-            upDms.Add(upDm);
-            downDms.Add(downDm);
-            trueRanges.Add(trueRange);
+            if (this.dxs.Count == this.period)
+            {
+                this.values.Add((int)Math.Round(this.dxs.Average()));
+            }
+            else if (this.dxs.Count > this.period)
+            {
+                var dxsAccum = (this.values.Last() * (this.period - 1) + this.dxs.Last()) / (decimal)this.period;
+                this.values.Add((int)Math.Round(dxsAccum));
+            }
 
-            sourceValues.Add(value);
-
-            //var downDi = acumDownDm / acumTrueRange;
-            //downDis.Add(downDi);
-
-            //var upDi = acumUpDm / acumTrueRange;
-            //upDis.Add(upDi);
-
-            //var dx = Math.Abs(upDi - downDi) / (upDi + downDi);
-            //dxs.Add(dx);
-
-            //var adx = dxs.TakeLast(period).Average()*100m;
-            //values.Add(adx);
+            this.sourceValues.Add(value);
         }
 
-        public IEnumerable<decimal> Values { get { return values; } }
+        #endregion
 
-        public IEnumerable<Candle> SourceValues { get { return sourceValues; } }
-
-        public IEnumerable<decimal> UpDms
-        {
-            get { return this.upDms; }
-        }
-
-        public IEnumerable<decimal> DownDms
-        {
-            get { return this.downDms; }
-        }
+        #region Methods
 
         protected void EnsureMaxBufferSize()
         {
-            var nbItemsToRemove = MaxNbOfItems - sourceValues.Count();
+            var nbItemsToRemove = MaxNbOfItems - this.sourceValues.Count();
             if (nbItemsToRemove <= 0)
             {
                 return;
@@ -140,7 +212,9 @@
 
         private static decimal GetTrueRange(Candle current, Candle previous)
         {
-            return (new[] { current.FullRange, Math.Abs(current.High - previous.Close), Math.Abs(current.Low - previous.Close)}).Max();
+            return (new[] { current.FullRange, Math.Abs(current.High - previous.Close), Math.Abs(current.Low - previous.Close) }).Max();
         }
+
+        #endregion
     }
 }
