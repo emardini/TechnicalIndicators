@@ -18,7 +18,7 @@
 
         #region Fields
 
-        private readonly List<decimal> downDIAccum;
+        private readonly List<decimal> downDiAccum;
 
         private readonly List<decimal> downDmAccum;
 
@@ -34,7 +34,7 @@
 
         private readonly List<decimal> trueRangesAccum;
 
-        private readonly List<decimal> upDIAccum;
+        private readonly List<decimal> upDiAccum;
 
         private readonly List<decimal> upDmAccum;
 
@@ -64,8 +64,8 @@
             this.trueRangesAccum = new List<decimal>();
             this.upDmAccum = new List<decimal>();
             this.downDmAccum = new List<decimal>();
-            this.upDIAccum = new List<decimal>();
-            this.downDIAccum = new List<decimal>();
+            this.upDiAccum = new List<decimal>();
+            this.downDiAccum = new List<decimal>();
 
             this.dxs = new List<decimal>();
         }
@@ -74,9 +74,9 @@
 
         #region Public Properties
 
-        public IEnumerable<decimal> DownDIAccum
+        public IEnumerable<decimal> DownDiAccum
         {
-            get { return this.downDIAccum; }
+            get { return this.downDiAccum; }
         }
 
         public IEnumerable<decimal> DownDmAccum
@@ -108,9 +108,9 @@
             get { return this.trueRangesAccum; }
         }
 
-        public IEnumerable<decimal> UpDIAccum
+        public IEnumerable<decimal> UpDiAccum
         {
-            get { return this.upDIAccum; }
+            get { return this.upDiAccum; }
         }
         public IEnumerable<decimal> UpDmAccum
         {
@@ -172,10 +172,10 @@
                 var currentDownDm = previousDownDm - (previousDownDm / this.period) + downDm;
                 this.downDmAccum.Add(currentDownDm);
 
-                this.upDIAccum.Add(this.upDmAccum.Last() / this.trueRangesAccum.Last());
-                this.downDIAccum.Add(this.downDmAccum.Last() / this.trueRangesAccum.Last());
+                this.upDiAccum.Add(this.upDmAccum.Last() / this.trueRangesAccum.Last());
+                this.downDiAccum.Add(this.downDmAccum.Last() / this.trueRangesAccum.Last());
 
-                var dx = Math.Abs(this.upDIAccum.Last() - this.downDIAccum.Last()) / (this.upDIAccum.Last() + this.downDIAccum.Last());
+                var dx = Math.Abs(this.upDiAccum.Last() - this.downDiAccum.Last()) / (this.upDiAccum.Last() + this.downDiAccum.Last());
                 this.dxs.Add(dx);
             }
 
@@ -185,7 +185,7 @@
             }
             else if (this.dxs.Count > this.period)
             {
-                var dxsAccum = (this.values.Last() * (this.period - 1) + this.dxs.Last()) / (decimal)this.period;
+                var dxsAccum = (this.values.Last() * (this.period - 1) + this.dxs.Last()) / this.period;
                 this.values.Add(dxsAccum);
             }
 

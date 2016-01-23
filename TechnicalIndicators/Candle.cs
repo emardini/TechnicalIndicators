@@ -49,6 +49,16 @@
                 throw new ArgumentException("Low cannot be greater than high");
             }
 
+            if (low > open)
+            {
+                throw new ArgumentException("Low cannot be greater than open");
+            }
+
+            if (low > close)
+            {
+                throw new ArgumentException("Low cannot be greater than close");
+            }
+
             this.open = open;
             this.close = close;
             this.low = low;

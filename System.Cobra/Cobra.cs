@@ -5,38 +5,210 @@
 
     using TechnicalIndicators;
 
-    public class Cobra
+    public class Cobra : ITradingSystem
     {
-        private readonly Sma slowSmaLow;
+        #region Constants
 
-        private readonly Sma slowSmaHigh;
+        private const int AdxTrendLevel = 22;
 
-        private readonly Ema fastEmaLow;
+        #endregion
 
-        private readonly Ema fastEmaHigh;
+        #region Fields
 
         private readonly Adx adx;
 
-        private readonly Rate currentRate;
-
         private readonly List<Candle> candles;
+
+        private readonly IDateProvider dateProvider;
+
+        private readonly Ema fastEmaHigh;
+
+        private readonly Ema fastEmaLow;
+
+        private readonly Sma slowSmaHigh;
+
+        private readonly Sma slowSmaLow;
+
+        public string Id { get; private set; }
+
+        private Rate currentRate;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        public Cobra(Adx adx, IEnumerable<Candle> initialCandles, Ema fastEmaHigh, Ema fastEmaLow, Sma slowSmaHigh, Sma slowSmaLow)
+            : this(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, new SimpleDateProvider())
+        {
+        }
+
+        public Cobra(Adx adx,
+            IEnumerable<Candle> initialCandles,
+            Ema fastEmaHigh,
+            Ema fastEmaLow,
+            Sma slowSmaHigh,
+            Sma slowSmaLow,
+            IDateProvider dateProvider)
+        {
+            if (adx == null)
+            {
+                throw new ArgumentNullException("adx");
+            }
+            if (initialCandles == null)
+            {
+                throw new ArgumentNullException("initialCandles");
+            }
+            if (fastEmaHigh == null)
+            {
+                throw new ArgumentNullException("fastEmaHigh");
+            }
+            if (fastEmaLow == null)
+            {
+                throw new ArgumentNullException("fastEmaLow");
+            }
+            if (slowSmaHigh == null)
+            {
+                throw new ArgumentNullException("slowSmaHigh");
+            }
+            if (slowSmaLow == null)
+            {
+                throw new ArgumentNullException("slowSmaLow");
+            }
+            if (dateProvider == null)
+            {
+                throw new ArgumentNullException("dateProvider");
+            }
+
+            this.adx = adx;
+            this.candles = initialCandles.ToList();
+            this.fastEmaHigh = fastEmaHigh;
+            this.fastEmaLow = fastEmaLow;
+            this.slowSmaHigh = slowSmaHigh;
+            this.slowSmaLow = slowSmaLow;
+            this.dateProvider = dateProvider;
+
+            Id = Guid.NewGuid().ToString();
+        }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        public static bool ConfirmPreviousCandleForAsk(Candle previousCandle, Candle currentCandle)
+        {
+            if (previousCandle == null)
+            {
+                return false;
+            }
+
+            if (currentCandle == null)
+            {
+                return false;
+            }
+
+            if (!previousCandle.IsUp)
+            {
+                return false;
+            }
+
+            return currentCandle.Close > previousCandle.Close;
+        }
+
+        public void AddCandle(Candle newCandle)
+        {
+            this.candles.Add(newCandle);
+            this.adx.Add(newCandle);
+            this.fastEmaHigh.Add(newCandle.High);
+            this.fastEmaLow.Add(newCandle.Low);
+            this.slowSmaHigh.Add(newCandle.High);
+            this.slowSmaLow.Add(newCandle.Low);
+        }
+
+        //Return structure containig reason why cannot go long to improve testability
+        public bool CanGoLong(Rate rate)
+        {
+            if (this.IsBannedDay())
+            {
+                return false;
+            }
+
+            var slowSmaHighValue = this.slowSmaHigh.Values.FirstOrDefault();
+            var fastEmaHighValue = this.fastEmaHigh.Values.FirstOrDefault();
+
+            if (fastEmaHighValue < slowSmaHighValue)
+            {
+                return false;
+            }
+
+            if (fastEmaHighValue > rate.Ask)
+            {
+                return false;
+            }
+
+            var currentCandle = this.candles.LastOrDefault();
+            if (currentCandle == null)
+            {
+                return false;
+            }
+
+            if (!currentCandle.IsUp)
+            {
+                return false;
+            }
+
+            if (fastEmaHighValue > currentCandle.Open)
+            {
+                return false;
+            }
+
+            var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
+            if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
+            {
+                previousCandle = this.candles.TakeLast(3).Skip(2)
+                    .FirstOrDefault();
+                if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
+                {
+                    return false;
+                }
+            }
+
+            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
+            {
+                return false;
+            }
+
+            var currentAdxValue = this.adx.Values.FirstOrDefault();
+            if (currentAdxValue < AdxTrendLevel)
+            {
+                return false;
+            }
+
+            var previousAdxValue = this.adx.Values.Skip(1)
+                .Take(1)
+                .FirstOrDefault();
+
+            return currentAdxValue > previousAdxValue;
+        }
 
         /// <summary>
         ///     Should happen every minute because the check needs to be frequent,
         ///     but the candles are queried in the predefined timeframe
         /// </summary>
-        public void OnTick()
+        public void CheckRate(Rate newRate)
         {
+            this.currentRate = newRate;
+
+            //Check indicators have enough data
+
             if (this.HasOpenOrder())
             {
                 if (this.ShouldCloseOrder())
                 {
                     this.CloseOrder();
                 }
-                return;
             }
 
-            if (this.CanGoLong())
+            if (this.CanGoLong(newRate))
             {
                 this.PlaceLongOrder();
                 return;
@@ -48,132 +220,17 @@
             }
         }
 
-        private void PlaceShortOrder()
+        public bool IsBannedDay()
         {
+            var currentDate = this.dateProvider.GetCurrentUtcDate();
+            return currentDate.DayOfWeek == DayOfWeek.Friday
+                   || currentDate.DayOfWeek == DayOfWeek.Saturday
+                   || currentDate.DayOfWeek == DayOfWeek.Sunday;
         }
 
-        private void PlaceLongOrder()
-        {
-        }
+        #endregion
 
-        private bool HasOpenOrder()
-        {
-            return false;
-        }
-
-        private void CloseOrder()
-        {
-        }
-
-        private bool ShouldCloseOrder()
-        {
-            return false;
-        }
-
-        private bool CanGoShort()
-        {
-            return false;
-        }
-
-        private bool CanGoLong()
-        {
-            if (IsBannedDays())
-            {
-                return false;
-            }
-
-            var rate = this.currentRate.Ask;
-            var slowSmaHighValue = this.slowSmaHigh.Values.FirstOrDefault();
-            var fastEmaHighValue = this.fastEmaHigh.Values.FirstOrDefault();
-
-            if (slowSmaHighValue >= fastEmaHighValue)
-            {
-                return false;
-            }
-
-            if (rate <= slowSmaHighValue || rate <= fastEmaHighValue)
-            {
-                return false;
-            }
-
-            var currentCandle = this.candles.FirstOrDefault();
-            if (currentCandle == null)
-            {
-                return false;
-            }
-
-            if (!currentCandle.IsAskUp)
-            {
-                return false;
-            }
-
-            if (currentCandle.OpenAsk <= slowSmaHighValue || currentCandle.OpenAsk <= fastEmaHighValue)
-            {
-                return false;
-            }
-
-            if (currentCandle.CloseAsk <= slowSmaHighValue || currentCandle.CloseAsk <= fastEmaHighValue)
-            {
-                return false;
-            }
-
-            var previousCandle = this.candles.Skip(1)
-                .Take(1)
-                .FirstOrDefault();
-            if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
-            {
-                previousCandle = this.candles.Skip(2)
-                    .Take(1)
-                    .FirstOrDefault();
-                if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
-                {
-                    return false;
-                }
-            }
-
-            if (currentCandle.IsAskReversal(GetThreshold(this.currentRate.Instrument)))
-            {
-                return false;
-            }
-
-            var currentAdxValue = this.adx.Values.FirstOrDefault();
-            if (currentAdxValue < 22)
-            {
-                return false;
-            }
-            var previousAdxValue = this.adx.Values.Skip(1)
-                .Take(1)
-                .FirstOrDefault();
-            if (currentAdxValue <= previousAdxValue)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool IsBannedDays()
-        {
-            return DateTime.UtcNow.DayOfWeek == DayOfWeek.Friday || DateTime.UtcNow.DayOfWeek == DayOfWeek.Saturday ||
-                   DateTime.UtcNow.DayOfWeek == DayOfWeek.Sunday;
-        }
-
-        private static bool ConfirmPreviousCandleForAsk(Candle previousCandle, Candle currentCandle)
-        {
-            if (previousCandle == null)
-            {
-                return false;
-            }
-            if (!previousCandle.IsAskUp)
-            {
-                return false;
-            }
-            if (currentCandle.CloseAsk <= previousCandle.CloseAsk)
-            {
-                return false;
-            }
-            return true;
-        }
+        #region Methods
 
         private static Threshold GetThreshold(string instrument)
         {
@@ -185,5 +242,34 @@
                     return new Threshold { Body = 0.1m, Delta = 0.0001m };
             }
         }
+
+        private bool CanGoShort()
+        {
+            return false;
+        }
+
+        private void CloseOrder()
+        {
+        }
+
+        private bool HasOpenOrder()
+        {
+            return false;
+        }
+
+        private void PlaceLongOrder()
+        {
+        }
+
+        private void PlaceShortOrder()
+        {
+        }
+
+        private bool ShouldCloseOrder()
+        {
+            return false;
+        }
+
+        #endregion
     }
 }
