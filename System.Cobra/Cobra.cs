@@ -25,20 +25,20 @@
 
         private readonly Ema fastEmaLow;
 
+        private readonly string instrument;
+
+        public int PeriodInMinutes { get; private set; }
+
         private readonly Sma slowSmaHigh;
 
         private readonly Sma slowSmaLow;
-
-        public string Id { get; private set; }
-
-        private Rate currentRate;
 
         #endregion
 
         #region Constructors and Destructors
 
-        public Cobra(Adx adx, IEnumerable<Candle> initialCandles, Ema fastEmaHigh, Ema fastEmaLow, Sma slowSmaHigh, Sma slowSmaLow)
-            : this(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, new SimpleDateProvider())
+        public Cobra(Adx adx, IEnumerable<Candle> initialCandles, Ema fastEmaHigh, Ema fastEmaLow, Sma slowSmaHigh, Sma slowSmaLow, string instrument, int periodInMinutes)
+            : this(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, new SimpleDateProvider(), instrument, periodInMinutes)
         {
         }
 
@@ -48,7 +48,9 @@
             Ema fastEmaLow,
             Sma slowSmaHigh,
             Sma slowSmaLow,
-            IDateProvider dateProvider)
+            IDateProvider dateProvider,
+            string instrument, 
+            int periodInMinutes)
         {
             if (adx == null)
             {
@@ -78,6 +80,10 @@
             {
                 throw new ArgumentNullException("dateProvider");
             }
+            if (string.IsNullOrWhiteSpace(instrument))
+            {
+                throw new ArgumentNullException("instrument");
+            }
 
             this.adx = adx;
             this.candles = initialCandles.ToList();
@@ -86,9 +92,24 @@
             this.slowSmaHigh = slowSmaHigh;
             this.slowSmaLow = slowSmaLow;
             this.dateProvider = dateProvider;
+            this.instrument = instrument;
+            this.PeriodInMinutes = periodInMinutes;
 
-            Id = Guid.NewGuid().ToString();
+            this.Id = Guid.NewGuid().ToString();
         }
+
+        #endregion
+
+        #region Public Properties
+
+        public string Id { get; private set; }
+
+        public string Instrument
+        {
+            get { return this.instrument; }
+        }
+
+        public Rate CurrentRate { get; private set; }
 
         #endregion
 
@@ -196,7 +217,7 @@
         /// </summary>
         public void CheckRate(Rate newRate)
         {
-            this.currentRate = newRate;
+            this.CurrentRate = newRate;
 
             //Check indicators have enough data
 

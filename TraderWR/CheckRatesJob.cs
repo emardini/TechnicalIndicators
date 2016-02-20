@@ -8,11 +8,11 @@
 
     using TechnicalIndicators;
 
-    public class TradeJob : IJob
+    public class CheckRatesJob : IJob
     {
         private readonly Cobra tradingSystem;
 
-        public TradeJob(Cobra tradingSystem)
+        public CheckRatesJob(Cobra tradingSystem)
         {
             if (tradingSystem == null)
             {
@@ -20,13 +20,7 @@
             }
 
             this.tradingSystem = tradingSystem;
-        }
-
-        #region Fields
-
-        //private readonly Cobra tradingSystem = new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72));
-
-        #endregion
+        }      
 
         #region Public Methods and Operators
 

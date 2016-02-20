@@ -3,6 +3,9 @@
   <WorkerRole name="TraderWR" vmsize="Small">
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
+      <Setting name="OandaApi" />
     </ConfigurationSettings>
+    <LocalResources>
+    </LocalResources>
   </WorkerRole>
 </ServiceDefinition>

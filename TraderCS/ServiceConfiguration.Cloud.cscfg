@@ -4,6 +4,7 @@
     <Instances count="1" />
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
+      <Setting name="OandaApi" value="http://api-sandbox.oanda.com/" />
     </ConfigurationSettings>
   </Role>
 </ServiceConfiguration>

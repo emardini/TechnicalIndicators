@@ -175,7 +175,9 @@
                 this.upDiAccum.Add(this.upDmAccum.Last() / this.trueRangesAccum.Last());
                 this.downDiAccum.Add(this.downDmAccum.Last() / this.trueRangesAccum.Last());
 
-                var dx = Math.Abs(this.upDiAccum.Last() - this.downDiAccum.Last()) / (this.upDiAccum.Last() + this.downDiAccum.Last());
+                var delta = Math.Abs(this.upDiAccum.Last() - this.downDiAccum.Last());
+                var divider = this.upDiAccum.Last() + this.downDiAccum.Last();
+                var dx = divider > 0 ? delta / divider : 0;
                 this.dxs.Add(dx);
             }
 

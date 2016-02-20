@@ -52,8 +52,17 @@ namespace TraderWR
         {
             this.kernel = new StandardKernel();
             this.kernel.Bind<Cobra>()
-                .ToConstant(new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72)))
+                .ToConstant(new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72), "EUR_USD", 10))
                 .InSingletonScope();
+
+            this.kernel.Bind<IRateProvider>()
+              .ToConstant(new BrokerAdapter.Oanda.Adapter("https://api-fxpractice.oanda.com/v1/",
+                "https://api-fxpractice.oanda.com/v1/",
+                "https://stream-fxpractice.oanda.com/v1/",
+                "https://stream-fxpractice.oanda.com/v1/",
+                "https://api-fxpractice.oanda.com/labs/v1/",
+                "eae6770a420a9d34e26e72476f7ba0b9-a4cf6da4641a217853a309b5257c5420"))
+              .InSingletonScope();
 
             return this.kernel;
         }
@@ -97,8 +106,8 @@ namespace TraderWR
             this.scheduler = this.kernel.Get<IScheduler>();
 
             // define the job and tie it to our WorkerJob class
-            var jobRate = JobBuilder.Create<TradeJob>().Build();
-            var jobCandle = JobBuilder.Create<TradeJob>().Build();
+            var jobRate = JobBuilder.Create<CheckRatesJob>().Build();
+            var jobCandle = JobBuilder.Create<UpdateCandlesJob>().Build();
 
             var ratesTrigger = TriggerBuilder.Create()
                 .StartNow() //.WithCronSchedule("0 0 12 * * ?") //TODO: set good schedule start
