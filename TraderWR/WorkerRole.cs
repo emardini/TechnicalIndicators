@@ -110,7 +110,7 @@ namespace TraderWR
             var jobCandle = JobBuilder.Create<UpdateCandlesJob>().Build();
 
             var ratesTrigger = TriggerBuilder.Create()
-                .StartNow() //.WithCronSchedule("0 0 12 * * ?") //TODO: set good schedule start
+                .StartNow() 
                 .WithDescription("Rates")                
                 .WithSimpleSchedule(x => x
                     .WithIntervalInSeconds(5)
@@ -118,7 +118,7 @@ namespace TraderWR
                 .Build();
 
             var candlesTrigger = TriggerBuilder.Create()
-              .StartNow() //.WithCronSchedule("0 0 12 * * ?") //TODO: set good schedule start
+              .StartNow() 
               .WithDescription("Candles")
               .WithSimpleSchedule(x => x
                   .WithIntervalInSeconds(10)

@@ -8,12 +8,12 @@
 
     using TechnicalIndicators;
 
+    [DisallowConcurrentExecution]
     public class UpdateCandlesJob : IJob
     {
         private readonly Cobra tradingSystem;
 
         private readonly IRateProvider rateProvider;
-
 
         public UpdateCandlesJob(Cobra tradingSystem, IRateProvider rateProvider)
         {

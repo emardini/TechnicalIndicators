@@ -14,15 +14,17 @@
 
         private readonly decimal open;
 
+        private readonly DateTime timestamp;
+
         #endregion
 
         #region Constructors and Destructors
 
-        public Candle() : this(0, 0, 0, 0)
+        public Candle() : this(0, 0, 0, 0, new DateTime())
         {
         }
 
-        public Candle(decimal open, decimal high, decimal low, decimal close)
+        public Candle(decimal open, decimal high, decimal low, decimal close, DateTime timestamp)
         {
             if (open < 0)
             {
@@ -61,6 +63,7 @@
 
             this.open = open;
             this.close = close;
+            this.timestamp = timestamp;
             this.low = low;
             this.high = high;
 
@@ -109,6 +112,10 @@
         public decimal Open
         {
             get { return this.open; }
+        }
+        public DateTime Timestamp
+        {
+            get { return this.timestamp; }
         }
 
         #endregion
