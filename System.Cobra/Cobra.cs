@@ -5,7 +5,7 @@
 
     using TechnicalIndicators;
 
-    public class Cobra : ITradingSystem
+    public class Cobra
     {
         #region Constants
 

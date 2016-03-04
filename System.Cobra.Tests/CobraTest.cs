@@ -35,7 +35,7 @@
         public void CanGoLong_IfCloseDoesNotIncreaseRelativeToTheTwoPreviousCandles_ReturnsFalse()
         {
             var adx = new Adx(14);
-            var initialCandles = new List<Candle> { new Candle(40, 50, 10, 10), new Candle(40, 50, 10, 10), new Candle(40, 50, 10, 45) };
+            var initialCandles = new List<Candle> { new Candle(40, 50, 10, 10, DateTime.UtcNow), new Candle(40, 50, 10, 10, DateTime.UtcNow), new Candle(40, 50, 10, 45, DateTime.UtcNow) };
             var fastEmaHigh = new Ema(12);
             var fastEmaLow = new Ema(12);
             fastEmaHigh.Add(20);
@@ -53,7 +53,7 @@
         public void CanGoLong_IfCurrentCandleIsNotUp_ReturnsFalse()
         {
             var adx = new Adx(14);
-            var initialCandles = new List<Candle> { new Candle(10, 50, 5, 5) };
+            var initialCandles = new List<Candle> { new Candle(10, 50, 5, 5, DateTime.UtcNow) };
             var fastEmaHigh = new Ema(12);
             var fastEmaLow = new Ema(12);
             fastEmaHigh.Add(20);
@@ -91,8 +91,8 @@
             var adx = new Adx(14);
             var initialCandles = new List<Candle>
             {
-                new Candle(1.47455M, 1.47657m, 1.473517m, 1.47607m),
-                new Candle(1.47607M, 1.47699m, 1.473517m, 1.47629m)
+                new Candle(1.47455M, 1.47657m, 1.473517m, 1.47607m, DateTime.UtcNow),
+                new Candle(1.47607M, 1.47699m, 1.473517m, 1.47629m, DateTime.UtcNow)
             };
             var fastEmaHigh = new Ema(12);
             var fastEmaLow = new Ema(12);
@@ -111,7 +111,7 @@
         public void CanGoLong_IfCurrentCandleOpenIsLessThanFastEmaOnHigh_ReturnsFalse()
         {
             var adx = new Adx(14);
-            var initialCandles = new List<Candle> { new Candle(10, 50, 10, 40) };
+            var initialCandles = new List<Candle> { new Candle(10, 50, 10, 40, DateTime.UtcNow) };
             var fastEmaHigh = new Ema(12);
             var fastEmaLow = new Ema(12);
             fastEmaHigh.Add(20);
@@ -163,7 +163,7 @@
         [Test]
         public void ConfirmPreviousCandleForAsk_IfCurrentCandleCloseHigherThanPreviousCandleClose_ReturnsTrue()
         {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15), new Candle(10, 20, 5, 16)).Should().BeTrue();
+            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 16, DateTime.UtcNow)).Should().BeTrue();
         }
 
         [Test]
@@ -175,19 +175,19 @@
         [Test]
         public void ConfirmPreviousCandleForAsk_IfPreviousCandleCloseIsEqualThanCurrentCandleClose_ReturnsFalse()
         {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15), new Candle(10, 20, 5, 15)).Should().BeFalse();
+            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 15, DateTime.UtcNow)).Should().BeFalse();
         }
 
         [Test]
         public void ConfirmPreviousCandleForAsk_IfPreviousCandleCloseIsHigherThanCurrentCandleClose_ReturnsFalse()
         {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15), new Candle(10, 20, 5, 14)).Should().BeFalse();
+            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 14, DateTime.UtcNow)).Should().BeFalse();
         }
 
         [Test]
         public void ConfirmPreviousCandleForAsk_IfPreviousCandleIsNotUp_ReturnsFalse()
         {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 8), new Candle()).Should().BeFalse();
+            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 8, DateTime.UtcNow), new Candle()).Should().BeFalse();
         }
 
         [Test]
