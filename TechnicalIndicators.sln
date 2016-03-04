@@ -19,11 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrokerAdapter.Oanda", "Brok
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OANDARestLibrary", "..\rest-csharp-refimpl-emardini\Reference Implementation\OANDARestLibrary\OANDARestLibrary.csproj", "{22F134F0-E5A3-496A-BE6B-75680F014388}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{10E5A545-DDAD-465A-84E2-722D0CBD4B5D}"
-	ProjectSection(SolutionItems) = preProject
-		WorkLog.md = WorkLog.md
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
