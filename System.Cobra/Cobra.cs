@@ -27,20 +27,17 @@
 
         private readonly string instrument;
 
-        public int PeriodInMinutes { get; private set; }
-
         private readonly Sma slowSmaHigh;
 
         private readonly Sma slowSmaLow;
 
+        private readonly ITradingAdapter tradingAdapter;
+
+       public string AccountId { get; private set; }
+
         #endregion
 
         #region Constructors and Destructors
-
-        public Cobra(Adx adx, IEnumerable<Candle> initialCandles, Ema fastEmaHigh, Ema fastEmaLow, Sma slowSmaHigh, Sma slowSmaLow, string instrument, int periodInMinutes)
-            : this(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, new SimpleDateProvider(), instrument, periodInMinutes)
-        {
-        }
 
         public Cobra(Adx adx,
             IEnumerable<Candle> initialCandles,
@@ -49,8 +46,10 @@
             Sma slowSmaHigh,
             Sma slowSmaLow,
             IDateProvider dateProvider,
-            string instrument, 
-            int periodInMinutes)
+            string instrument,
+            int periodInMinutes,
+            ITradingAdapter tradingAdapter,
+            string accountId)
         {
             if (adx == null)
             {
@@ -80,6 +79,14 @@
             {
                 throw new ArgumentNullException("dateProvider");
             }
+            if (tradingAdapter == null)
+            {
+                throw new ArgumentNullException("tradingAdapter");
+            }
+            if (string.IsNullOrWhiteSpace(accountId) )
+            {
+                throw new ArgumentNullException("accountId");
+            }
             if (string.IsNullOrWhiteSpace(instrument))
             {
                 throw new ArgumentNullException("instrument");
@@ -93,6 +100,8 @@
             this.slowSmaLow = slowSmaLow;
             this.dateProvider = dateProvider;
             this.instrument = instrument;
+            this.tradingAdapter = tradingAdapter;
+            this.AccountId = accountId;
             this.PeriodInMinutes = periodInMinutes;
 
             this.Id = Guid.NewGuid().ToString();
@@ -102,6 +111,8 @@
 
         #region Public Properties
 
+        public Rate CurrentRate { get; private set; }
+
         public string Id { get; private set; }
 
         public string Instrument
@@ -109,7 +120,7 @@
             get { return this.instrument; }
         }
 
-        public Rate CurrentRate { get; private set; }
+        public int PeriodInMinutes { get; private set; }
 
         #endregion
 
@@ -221,7 +232,7 @@
 
             //Check indicators have enough data
 
-            if (this.HasOpenOrder())
+            if (!HasOpenOrPendingOrder())
             {
                 if (this.ShouldCloseOrder())
                 {
@@ -273,9 +284,9 @@
         {
         }
 
-        private bool HasOpenOrder()
+        private bool HasOpenOrPendingOrder()
         {
-            return false;
+            return tradingAdapter.HasOpenOrder(AccountId) || tradingAdapter.HasOpenTrade(AccountId);
         }
 
         private void PlaceLongOrder()

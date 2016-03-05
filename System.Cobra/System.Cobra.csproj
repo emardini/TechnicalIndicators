@@ -45,9 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cobra.cs" />
-    <Compile Include="DateProvider.cs" />
-    <Compile Include="IDateProvider.cs" />
-    <Compile Include="ITradingSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -36,7 +36,7 @@
         public void Execute(IJobExecutionContext context)
         {
             Trace.TraceInformation("UpdateCandles Job {0} - Agent {1}", DateTime.Now, tradingSystem.Id);
-            var candle = rateProvider.GetLastCandle(tradingSystem.Instrument, tradingSystem.PeriodInMinutes, 5027596);
+            var candle = rateProvider.GetLastCandle(tradingSystem.Instrument, tradingSystem.PeriodInMinutes);
             this.tradingSystem.AddCandle(candle);
         }
 

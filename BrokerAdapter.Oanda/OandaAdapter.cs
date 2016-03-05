@@ -12,7 +12,7 @@
 
     using Candle = TechnicalIndicators.Candle;
 
-    public class Adapter : IRateProvider
+    public class OandaAdapter : IRateProvider, ITradingAdapter
     {
         #region Fields
 
@@ -22,7 +22,7 @@
 
         #region Constructors and Destructors
 
-        public Adapter(string accountUrl, string ratesUrl, string streamingRatesUrl, string streamingEventsUrl, string labsUrl, string token)
+        public OandaAdapter(string accountUrl, string ratesUrl, string streamingRatesUrl, string streamingEventsUrl, string labsUrl, string token)
         {
             this.proxy = new Rest(accountUrl, ratesUrl, streamingRatesUrl, streamingEventsUrl, labsUrl, token);
         }
@@ -31,7 +31,7 @@
 
         #region Public Methods and Operators
 
-        public Candle GetLastCandle(string instrument, int periodInMinutes, int accountId)
+        public Candle GetLastCandle(string instrument, int periodInMinutes)
         {
             if (string.IsNullOrWhiteSpace(instrument))
             {
@@ -102,5 +102,43 @@
         }
 
         #endregion
+
+        public bool HasOpenOrder(string accountId)
+        {
+            if (string.IsNullOrWhiteSpace(accountId))
+            {
+                throw new ArgumentException("accountId");
+            }
+
+            var accountIdValue = accountId.SafeParseInt();
+            if (!accountIdValue.HasValue)
+            {
+                throw new ArgumentException(string.Format("Invalid account id {0}", accountId));
+            }
+
+            var response =
+                this.proxy.GetOrderListAsync(accountIdValue.Value, new Dictionary<string, string> { {"count", "1"}}).Result;
+
+            return response.Any();
+        }
+
+        public bool HasOpenTrade(string accountId)
+        {
+            if (string.IsNullOrWhiteSpace(accountId))
+            {
+                throw new ArgumentException("accountId");
+            }
+
+            var accountIdValue = accountId.SafeParseInt();
+            if (!accountIdValue.HasValue)
+            {
+                throw new ArgumentException(string.Format("Invalid account id {0}", accountId));
+            }
+
+            var response =
+                this.proxy.GetTradeListAsync(accountIdValue.Value, new Dictionary<string, string> { { "count", "1" } }).Result;
+
+            return response.Any();
+        }
     }
 }

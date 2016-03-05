@@ -41,9 +41,12 @@
     <Compile Include="Candle.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DateProvider.cs" />
     <Compile Include="Ema.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="IDateProvider.cs" />
     <Compile Include="IRateProvider.cs" />
+    <Compile Include="ITradingAdapter.cs" />
     <Compile Include="MovingAverage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rate.cs">

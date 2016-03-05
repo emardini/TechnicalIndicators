@@ -7,6 +7,8 @@ namespace TraderWR
     using System.Threading;
     using System.Threading.Tasks;
 
+    using BrokerAdapter.Oanda;
+
     using Ninject;
     using Ninject.Extensions.Azure;
 
@@ -50,18 +52,20 @@ namespace TraderWR
 
         protected override IKernel CreateKernel()
         {
-            this.kernel = new StandardKernel();
-            this.kernel.Bind<Cobra>()
-                .ToConstant(new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72), "EUR_USD", 10))
-                .InSingletonScope();
-
-            this.kernel.Bind<IRateProvider>()
-              .ToConstant(new BrokerAdapter.Oanda.Adapter("https://api-fxpractice.oanda.com/v1/",
+            var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/labs/v1/",
-                "eae6770a420a9d34e26e72476f7ba0b9-a4cf6da4641a217853a309b5257c5420"))
+                "XXXXXXXXXXXXXX");
+
+            this.kernel = new StandardKernel();
+            this.kernel.Bind<Cobra>()
+                .ToConstant(new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, "0000000"))
+                .InSingletonScope();
+
+            this.kernel.Bind<IRateProvider>()
+              .ToConstant(adapter)
               .InSingletonScope();
 
             return this.kernel;

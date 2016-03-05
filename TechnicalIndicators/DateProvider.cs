@@ -1,5 +1,7 @@
-﻿namespace System.Cobra
+﻿namespace TechnicalIndicators
 {
+    using System;
+
     public class SimpleDateProvider : IDateProvider
     {
         #region Public Methods and Operators
