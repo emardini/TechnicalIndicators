@@ -29,7 +29,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 8)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 25, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -47,7 +47,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 14, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 14, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 25, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -65,7 +65,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 25, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -83,7 +83,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 25, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -105,7 +105,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 1.4761m, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -123,7 +123,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 25, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -141,7 +141,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 3, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -158,7 +158,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.CanGoLong(new Rate { Ask = 3, Instrument = "EURUSD" }).Should().BeFalse();
         }
@@ -210,7 +210,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 8)); //Friday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.IsBannedDay().Should().BeTrue();
         }
@@ -226,7 +226,7 @@
             var slowSmaLow = new Sma(72);
             var dateProvider = new Mock<IDateProvider>();
             dateProvider.Setup(x => x.GetCurrentUtcDate()).Returns(new DateTime(2016, 1, 7)); //Thursday
-            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, "1");
+            var target = new Cobra(adx, initialCandles, fastEmaHigh, fastEmaLow, slowSmaHigh, slowSmaLow, dateProvider.Object, "EURUSD", 15, adapterMock.Object, 1);
 
             target.IsBannedDay().Should().BeFalse();
         }

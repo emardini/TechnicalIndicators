@@ -31,6 +31,11 @@
 
         #region Public Methods and Operators
 
+        public void CloseTrade(int accountId, long tradeId)
+        {
+            var result = this.proxy.DeleteTradeAsync(accountId, tradeId).Result;
+        }
+
         public Candle GetLastCandle(string instrument, int periodInMinutes)
         {
             if (string.IsNullOrWhiteSpace(instrument))
@@ -59,6 +64,29 @@
             return candle;
         }
 
+        public Trade GetOpenTrade(int accountId)
+        {
+            var response =
+                this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
+
+            return
+                response.Select(
+                    x =>
+                        new Trade
+                        {
+                            Id = x.id,
+                            Instrument = x.instrument,
+                            Price = (decimal)x.price,
+                            Side = x.side,
+                            StopLoss = (decimal)x.stopLoss,
+                            TakeProfit = (decimal)x.takeProfit,
+                            Time = x.time.SafeParseDate().GetValueOrDefault(),
+                            TrailingAmount = (decimal)x.trailingAmount,
+                            TrailingStop = x.trailingStop,
+                            Units = x.units
+                        }).FirstOrDefault();
+        }
+
         public Rate GetRate(string instrument)
         {
             if (string.IsNullOrWhiteSpace(instrument))
@@ -84,6 +112,22 @@
             return candle;
         }
 
+        public bool HasOpenOrder(int accountId)
+        {
+            var response =
+                this.proxy.GetOrderListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
+
+            return response.Any();
+        }
+
+        public bool HasOpenTrade(int accountId)
+        {
+            var response =
+                this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
+
+            return response.Any();
+        }
+
         #endregion
 
         #region Methods
@@ -102,43 +146,5 @@
         }
 
         #endregion
-
-        public bool HasOpenOrder(string accountId)
-        {
-            if (string.IsNullOrWhiteSpace(accountId))
-            {
-                throw new ArgumentException("accountId");
-            }
-
-            var accountIdValue = accountId.SafeParseInt();
-            if (!accountIdValue.HasValue)
-            {
-                throw new ArgumentException(string.Format("Invalid account id {0}", accountId));
-            }
-
-            var response =
-                this.proxy.GetOrderListAsync(accountIdValue.Value, new Dictionary<string, string> { {"count", "1"}}).Result;
-
-            return response.Any();
-        }
-
-        public bool HasOpenTrade(string accountId)
-        {
-            if (string.IsNullOrWhiteSpace(accountId))
-            {
-                throw new ArgumentException("accountId");
-            }
-
-            var accountIdValue = accountId.SafeParseInt();
-            if (!accountIdValue.HasValue)
-            {
-                throw new ArgumentException(string.Format("Invalid account id {0}", accountId));
-            }
-
-            var response =
-                this.proxy.GetTradeListAsync(accountIdValue.Value, new Dictionary<string, string> { { "count", "1" } }).Result;
-
-            return response.Any();
-        }
     }
 }

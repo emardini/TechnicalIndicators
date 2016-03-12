@@ -61,7 +61,7 @@ namespace TraderWR
 
             this.kernel = new StandardKernel();
             this.kernel.Bind<Cobra>()
-                .ToConstant(new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, "0000000"))
+                .ToConstant(new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, 0))
                 .InSingletonScope();
 
             this.kernel.Bind<IRateProvider>()
@@ -129,7 +129,6 @@ namespace TraderWR
                   .RepeatForever())
               .Build();
 
-            // Tell quartz to schedule the job using our trigger
             this.scheduler.ScheduleJob(jobRate, ratesTrigger);
             this.scheduler.ScheduleJob(jobCandle, candlesTrigger);
 

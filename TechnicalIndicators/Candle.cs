@@ -129,7 +129,7 @@
                 throw new ArgumentNullException("threshold");
             }
 
-            return (this.Close - this.Open <= threshold.Delta);
+            return (Math.Abs(this.Close - this.Open) <= threshold.Delta);
         }
 
         #endregion

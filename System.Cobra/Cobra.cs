@@ -33,7 +33,7 @@
 
         private readonly ITradingAdapter tradingAdapter;
 
-       public string AccountId { get; private set; }
+       public int AccountId { get; private set; }
 
         #endregion
 
@@ -49,7 +49,7 @@
             string instrument,
             int periodInMinutes,
             ITradingAdapter tradingAdapter,
-            string accountId)
+            int accountId)
         {
             if (adx == null)
             {
@@ -82,10 +82,6 @@
             if (tradingAdapter == null)
             {
                 throw new ArgumentNullException("tradingAdapter");
-            }
-            if (string.IsNullOrWhiteSpace(accountId) )
-            {
-                throw new ArgumentNullException("accountId");
             }
             if (string.IsNullOrWhiteSpace(instrument))
             {
@@ -231,13 +227,20 @@
             this.CurrentRate = newRate;
 
             //Check indicators have enough data
-
-            if (!HasOpenOrPendingOrder())
+            if (tradingAdapter.HasOpenOrder(AccountId))
+                return;
+            
+            if(tradingAdapter.HasOpenTrade(AccountId))
             {
-                if (this.ShouldCloseOrder())
+                var currentTrade = this.tradingAdapter.GetOpenTrade(AccountId);
+                if (this.ShouldCloseTrade(currentTrade))
                 {
-                    this.CloseOrder();
+                    this.tradingAdapter.CloseTrade(AccountId, currentTrade.Id);
                 }
+                else
+                {
+                    return; 
+                }               
             }
 
             if (this.CanGoLong(newRate))
@@ -246,7 +249,7 @@
                 return;
             }
 
-            if (this.CanGoShort())
+            if (this.CanGoShort(newRate))
             {
                 this.PlaceShortOrder();
             }
@@ -275,19 +278,91 @@
             }
         }
 
-        private bool CanGoShort()
+        private bool CanGoShort(Rate rate)
         {
-            return false;
+            if (this.IsBannedDay())
+            {
+                return false;
+            }
+
+            var slowSmaLowValue = this.slowSmaLow.Values.FirstOrDefault();
+            var fastEmaLowValue = this.fastEmaLow.Values.FirstOrDefault();
+
+            if (slowSmaLowValue < rate.Ask)
+            {
+                return false;
+            }
+
+            if (fastEmaLowValue < rate.Ask)
+            {
+                return false;
+            }
+
+            var currentCandle = this.candles.LastOrDefault();
+            if (currentCandle == null)
+            {
+                return false;
+            }
+
+            if (!currentCandle.IsDown)
+            {
+                return false;
+            }
+
+            if (fastEmaLowValue < currentCandle.Open)
+            {
+                return false;
+            }
+
+            var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
+            if (!ConfirmPreviousCandleForBid(previousCandle, currentCandle))
+            {
+                previousCandle = this.candles.TakeLast(3).Skip(2)
+                    .FirstOrDefault();
+                if (!ConfirmPreviousCandleForBid(previousCandle, currentCandle))
+                {
+                    return false;
+                }
+            }
+
+            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
+            {
+                return false;
+            }
+
+            var currentAdxValue = this.adx.Values.FirstOrDefault();
+            if (currentAdxValue < AdxTrendLevel)
+            {
+                return false;
+            }
+
+            var previousAdxValue = this.adx.Values.Skip(1)
+                .Take(1)
+                .FirstOrDefault();
+
+            return currentAdxValue > previousAdxValue;
         }
 
-        private void CloseOrder()
+        private static bool ConfirmPreviousCandleForBid(Candle previousCandle, Candle currentCandle)
         {
+            if (previousCandle == null)
+            {
+                return false;
+            }
+
+            if (currentCandle == null)
+            {
+                return false;
+            }
+
+            if (!previousCandle.IsDown)
+            {
+                return false;
+            }
+
+            return currentCandle.Close < previousCandle.Close;
         }
 
-        private bool HasOpenOrPendingOrder()
-        {
-            return tradingAdapter.HasOpenOrder(AccountId) || tradingAdapter.HasOpenTrade(AccountId);
-        }
 
         private void PlaceLongOrder()
         {
@@ -297,9 +372,25 @@
         {
         }
 
-        private bool ShouldCloseOrder()
+        private bool ShouldCloseTrade(Trade currentTrade)
         {
-            return false;
+            var currentCandle = this.candles.LastOrDefault();
+
+            switch (currentTrade.Side)
+            {
+                case "Buy":
+                {
+                    var fastEmaLowValue = this.fastEmaLow.Values.FirstOrDefault();
+                    return currentCandle.IsDown && currentCandle.Close < fastEmaLowValue;
+                }
+                case "Sell":
+                {
+                    var fastEmaHighValue = this.fastEmaHigh.Values.FirstOrDefault();
+                    return currentCandle.IsUp && currentCandle.Close < fastEmaHighValue;
+                }
+            }
+
+            return true; //This should not happen, but in case it happens, it could be wise to close the trade or maybe send a notification                
         }
 
         #endregion

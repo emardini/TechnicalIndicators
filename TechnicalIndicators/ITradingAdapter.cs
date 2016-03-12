@@ -2,8 +2,12 @@
 {
     public interface ITradingAdapter
     {
-        bool HasOpenOrder(string accountId);
+        bool HasOpenOrder(int accountId);
 
-        bool HasOpenTrade(string accountId);
+        bool HasOpenTrade(int accountId);
+
+        Trade GetOpenTrade(int accountId);
+
+        void CloseTrade(int accountId, long tradeId);
     }
 }
