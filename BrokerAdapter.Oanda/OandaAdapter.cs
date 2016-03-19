@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
 
     using OANDARestLibrary;
@@ -11,6 +12,7 @@
     using TechnicalIndicators;
 
     using Candle = TechnicalIndicators.Candle;
+    using Order = TechnicalIndicators.Order;
 
     public class OandaAdapter : IRateProvider, ITradingAdapter
     {
@@ -33,7 +35,9 @@
 
         public void CloseTrade(int accountId, long tradeId)
         {
-            var result = this.proxy.DeleteTradeAsync(accountId, tradeId).Result;
+            //TODO: Implement retries and notification in case the system cannot close the trade.
+            //Which actions can it take if is not possible to close the order
+            var response = this.proxy.DeleteTradeAsync(accountId, tradeId).Result;
         }
 
         public Candle GetLastCandle(string instrument, int periodInMinutes)
@@ -126,6 +130,30 @@
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
 
             return response.Any();
+        }
+
+        public void PlaceOrder(Order order)
+        {
+            var result = this.proxy.PostOrderAsync(order.AcountId,
+                new Dictionary<string, string>
+                {
+                    { "instrument", order.Instrument },
+                    { "units", order.Units.ToString(CultureInfo.InvariantCulture) },
+                    { "side", order.Side },
+                    { "type", order.OrderType },
+                    { "stopLoss", order.StopLoss.ToString(CultureInfo.InvariantCulture) }
+                }).Result;
+        }
+
+        public void UpdateTrade(Trade updatedTrade)
+        {
+            var result = this.proxy.PatchTradeAsync(updatedTrade.AccountId, updatedTrade.Id,
+               new Dictionary<string, string>
+                {
+                    { "takeProfit", updatedTrade.TakeProfit.ToString(CultureInfo.InvariantCulture)},
+                    { "trailingStop", updatedTrade.TrailingStop.ToString(CultureInfo.InvariantCulture)},
+                    { "stopLoss", updatedTrade.StopLoss.ToString(CultureInfo.InvariantCulture) }
+                }).Result;
         }
 
         #endregion

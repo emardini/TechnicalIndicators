@@ -26,6 +26,8 @@ namespace TechnicalIndicators
 
         public int Units { get; set; }
 
+        public int AccountId { get; set; }
+
         #endregion
     }
 }

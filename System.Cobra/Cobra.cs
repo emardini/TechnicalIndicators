@@ -11,6 +11,14 @@
 
         private const int AdxTrendLevel = 22;
 
+        private const string OrderSideBuy = "buy";
+
+        private const string OrderSideSell = "sell";
+
+        private const string OrderTypeMarket = "market";
+
+        private const int Slippage = 5;
+
         #endregion
 
         #region Fields
@@ -32,8 +40,6 @@
         private readonly Sma slowSmaLow;
 
         private readonly ITradingAdapter tradingAdapter;
-
-       public int AccountId { get; private set; }
 
         #endregion
 
@@ -106,6 +112,8 @@
         #endregion
 
         #region Public Properties
+
+        public int AccountId { get; private set; }
 
         public Rate CurrentRate { get; private set; }
 
@@ -227,31 +235,39 @@
             this.CurrentRate = newRate;
 
             //Check indicators have enough data
-            if (tradingAdapter.HasOpenOrder(AccountId))
-                return;
-            
-            if(tradingAdapter.HasOpenTrade(AccountId))
+            if (this.tradingAdapter.HasOpenOrder(this.AccountId))
             {
-                var currentTrade = this.tradingAdapter.GetOpenTrade(AccountId);
+                return;
+            }
+
+            if (this.tradingAdapter.HasOpenTrade(this.AccountId))
+            {
+                var currentTrade = this.tradingAdapter.GetOpenTrade(this.AccountId);
                 if (this.ShouldCloseTrade(currentTrade))
                 {
-                    this.tradingAdapter.CloseTrade(AccountId, currentTrade.Id);
+                    this.tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
+                }
+                else if (this.ShouldModifyTrade(currentTrade))
+                {
+                    var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0 };
+                    this.tradingAdapter.UpdateTrade(updatedTrade);
+                    return;
                 }
                 else
                 {
-                    return; 
-                }               
+                    return;
+                }
             }
 
             if (this.CanGoLong(newRate))
             {
-                this.PlaceLongOrder();
+                this.PlaceOrder(OrderSideBuy);
                 return;
             }
 
             if (this.CanGoShort(newRate))
             {
-                this.PlaceShortOrder();
+                this.PlaceOrder(OrderSideSell);
             }
         }
 
@@ -267,6 +283,26 @@
 
         #region Methods
 
+        private static bool ConfirmPreviousCandleForBid(Candle previousCandle, Candle currentCandle)
+        {
+            if (previousCandle == null)
+            {
+                return false;
+            }
+
+            if (currentCandle == null)
+            {
+                return false;
+            }
+
+            if (!previousCandle.IsDown)
+            {
+                return false;
+            }
+
+            return currentCandle.Close < previousCandle.Close;
+        }
+
         private static Threshold GetThreshold(string instrument)
         {
             switch (instrument)
@@ -276,6 +312,18 @@
                 default:
                     return new Threshold { Body = 0.1m, Delta = 0.0001m };
             }
+        }
+
+        private int CalculatePositionSize()
+        {
+            //TODO: Use account balance and Kelly Criterior to calculate position size
+            return (int)(3000.00m * 0.02m);
+        }
+
+        private decimal CalculateStopLossDistance()
+        {
+            //TODO: Calculate stop loss based on indicators 
+            return 25;
         }
 
         private bool CanGoShort(Rate rate)
@@ -343,33 +391,20 @@
             return currentAdxValue > previousAdxValue;
         }
 
-        private static bool ConfirmPreviousCandleForBid(Candle previousCandle, Candle currentCandle)
+        private void PlaceOrder(string side)
         {
-            if (previousCandle == null)
+            var positionSizeInUnits = this.CalculatePositionSize();
+            var stopLossDistance = this.CalculateStopLossDistance();
+            //TODO: Decide if to user lower-upper bounds or just market order and assume the slippage
+            this.tradingAdapter.PlaceOrder(new Order
             {
-                return false;
-            }
-
-            if (currentCandle == null)
-            {
-                return false;
-            }
-
-            if (!previousCandle.IsDown)
-            {
-                return false;
-            }
-
-            return currentCandle.Close < previousCandle.Close;
-        }
-
-
-        private void PlaceLongOrder()
-        {
-        }
-
-        private void PlaceShortOrder()
-        {
+                Instrument = this.instrument,
+                Units = positionSizeInUnits,
+                Side = side,
+                OrderType = OrderTypeMarket,
+                TrailingStop = stopLossDistance,
+                AcountId = AccountId
+            });
         }
 
         private bool ShouldCloseTrade(Trade currentTrade)
@@ -378,19 +413,32 @@
 
             switch (currentTrade.Side)
             {
-                case "Buy":
+                case OrderSideBuy:
                 {
                     var fastEmaLowValue = this.fastEmaLow.Values.FirstOrDefault();
                     return currentCandle.IsDown && currentCandle.Close < fastEmaLowValue;
                 }
-                case "Sell":
+                case OrderSideSell:
                 {
                     var fastEmaHighValue = this.fastEmaHigh.Values.FirstOrDefault();
                     return currentCandle.IsUp && currentCandle.Close < fastEmaHighValue;
                 }
             }
 
-            return true; //This should not happen, but in case it happens, it could be wise to close the trade or maybe send a notification                
+            return true;
+                //This should not happen, but in case it happens, it could be wise to close the trade or maybe send a notification                
+        }
+
+        private bool ShouldModifyTrade(Trade currentTrade)
+        {
+            decimal? spread = (CurrentRate.Ask - CurrentRate.Bid)/2;
+            switch (currentTrade.Side)
+            {
+                case OrderSideBuy:                    
+                    return currentTrade.TrailingAmount >= currentTrade.Price + spread + Slippage;
+                default:
+                    return currentTrade.TrailingAmount <= currentTrade.Price - spread - Slippage;
+            }
         }
 
         #endregion
