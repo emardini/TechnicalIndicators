@@ -52,6 +52,17 @@
         }
 
         /// <summary>
+        ///     Parses an string to double with invariant culture
+        /// </summary>
+        /// <param name="that"></param>
+        /// <returns></returns>
+        public static decimal? SafeParseDecimal(this string that)
+        {
+            decimal test;
+            return decimal.TryParse(that, NumberStyles.Float, CultureInfo.InvariantCulture, out test) ? test : (decimal?)null;
+        }
+
+        /// <summary>
         ///     Parses an string to float with invariant culture
         /// </summary>
         /// <param name="that"></param>

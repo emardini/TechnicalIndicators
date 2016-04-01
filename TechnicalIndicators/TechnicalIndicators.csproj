@@ -37,6 +37,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountInformation.cs" />
     <Compile Include="Adx.cs" />
     <Compile Include="Candle.cs">
       <SubType>Code</SubType>

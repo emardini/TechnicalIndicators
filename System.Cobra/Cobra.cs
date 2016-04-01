@@ -19,6 +19,8 @@
 
         private const int Slippage = 5;
 
+        private const decimal BaseRiskPercentage = 0.02m;
+
         #endregion
 
         #region Fields
@@ -171,7 +173,7 @@
             var slowSmaHighValue = this.slowSmaHigh.Values.FirstOrDefault();
             var fastEmaHighValue = this.fastEmaHigh.Values.FirstOrDefault();
 
-            if (fastEmaHighValue < slowSmaHighValue)
+            if (slowSmaHighValue > rate.Ask)
             {
                 return false;
             }
@@ -316,14 +318,23 @@
 
         private int CalculatePositionSize()
         {
+            var accountInformation = tradingAdapter.GetAccountInformation(AccountId);
+            var positionSize = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault() * BaseRiskPercentage;
+
             //TODO: Use account balance and Kelly Criterior to calculate position size
-            return (int)(3000.00m * 0.02m);
+            return (int)positionSize;
         }
 
-        private decimal CalculateStopLossDistance()
+        private decimal CalculateStopLossDistance(string side)
         {
-            //TODO: Calculate stop loss based on indicators 
-            return 25;
+            if (side == OrderSideBuy)
+            {
+                var lowLimit = this.fastEmaLow.Values.FirstOrDefault();
+                return (CurrentRate.Ask - lowLimit) * 10000m;
+            }
+
+            var highLimit =  this.fastEmaHigh.Values.FirstOrDefault();
+            return (highLimit - this.CurrentRate.Bid) * 10000m;
         }
 
         private bool CanGoShort(Rate rate)
@@ -336,12 +347,12 @@
             var slowSmaLowValue = this.slowSmaLow.Values.FirstOrDefault();
             var fastEmaLowValue = this.fastEmaLow.Values.FirstOrDefault();
 
-            if (slowSmaLowValue < rate.Ask)
+            if (slowSmaLowValue < rate.Bid)
             {
                 return false;
             }
 
-            if (fastEmaLowValue < rate.Ask)
+            if (fastEmaLowValue < rate.Bid)
             {
                 return false;
             }
@@ -392,9 +403,9 @@
         }
 
         private void PlaceOrder(string side)
-        {
+        {            
+            var stopLossDistance = this.CalculateStopLossDistance(side);
             var positionSizeInUnits = this.CalculatePositionSize();
-            var stopLossDistance = this.CalculateStopLossDistance();
             //TODO: Decide if to user lower-upper bounds or just market order and assume the slippage
             this.tradingAdapter.PlaceOrder(new Order
             {

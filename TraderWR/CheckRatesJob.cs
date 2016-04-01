@@ -36,8 +36,15 @@
         public void Execute(IJobExecutionContext context)
         {
             Trace.TraceInformation("Trade Job {0} - Agent {1}", DateTime.Now, tradingSystem.Id);
-            var rate = rateProvider.GetRate("EUR_USD");
-            this.tradingSystem.CheckRate(rate);
+            try
+            {
+                var rate = rateProvider.GetRate("EUR_USD");
+                this.tradingSystem.CheckRate(rate);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.Message);
+            }
         }
 
         #endregion

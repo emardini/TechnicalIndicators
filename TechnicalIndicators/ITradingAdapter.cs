@@ -14,5 +14,7 @@
 
 
         void UpdateTrade(Trade updatedTrade);
+
+        AccountInformation GetAccountInformation(int accountId);
     }
 }

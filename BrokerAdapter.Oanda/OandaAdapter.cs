@@ -147,13 +147,26 @@
 
         public void UpdateTrade(Trade updatedTrade)
         {
-            var result = this.proxy.PatchTradeAsync(updatedTrade.AccountId, updatedTrade.Id,
-               new Dictionary<string, string>
+            var result = this.proxy.PatchTradeAsync(updatedTrade.AccountId,
+                updatedTrade.Id,
+                new Dictionary<string, string>
                 {
-                    { "takeProfit", updatedTrade.TakeProfit.ToString(CultureInfo.InvariantCulture)},
-                    { "trailingStop", updatedTrade.TrailingStop.ToString(CultureInfo.InvariantCulture)},
+                    { "takeProfit", updatedTrade.TakeProfit.ToString(CultureInfo.InvariantCulture) },
+                    { "trailingStop", updatedTrade.TrailingStop.ToString(CultureInfo.InvariantCulture) },
                     { "stopLoss", updatedTrade.StopLoss.ToString(CultureInfo.InvariantCulture) }
                 }).Result;
+        }
+
+        #endregion
+
+        #region Explicit Interface Methods
+
+        AccountInformation ITradingAdapter.GetAccountInformation(int accountId)
+        {
+            var response =
+                this.proxy.GetAccountDetailsAsync(accountId).Result;
+
+            return new AccountInformation { AccountId = response.accountId, AccountCurrency = response.accountCurrency, Balance = response.balance };
         }
 
         #endregion
