@@ -248,6 +248,11 @@
         {
             this.CurrentRate = newRate;
 
+            if (adx.Values.Count() < 25)
+            {
+                return;
+            }
+
             //Check indicators have enough data
             if (this.tradingAdapter.HasOpenOrder(this.AccountId))
             {
