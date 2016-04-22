@@ -40,32 +40,9 @@
             var response = this.proxy.DeleteTradeAsync(accountId, tradeId).Result;
         }
 
-        public Candle GetLastCandle(string instrument, int periodInMinutes)
+        public Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
         {
-            if (string.IsNullOrWhiteSpace(instrument))
-            {
-                throw new ArgumentException("Empty instrument");
-            }
-
-            instrument = instrument.Trim();
-            if (instrument.Length != 7)
-            {
-                throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
-            }
-
-            var candleResponse =
-                this.proxy.GetCandlesAsync(new CandlesRequest
-                {
-                    candleFormat = ECandleFormat.midpoint,
-                    count = 1,
-                    granularity = GetGranularity(periodInMinutes),
-                    instrument = instrument
-                }).Result;
-            var candle =
-                candleResponse.Select(x => new Candle(x.openMid, x.highMid, x.lowMid, x.closeMid, x.time.SafeParseDate().GetValueOrDefault()))
-                    .FirstOrDefault();
-
-            return candle;
+            return this.GetLastCandles(instrument, periodInMinutes, 1, endDateTime).FirstOrDefault();
         }
 
         public Trade GetOpenTrade(int accountId)
@@ -175,7 +152,37 @@
 
         private static EGranularity GetGranularity(int periodInMinutes)
         {
-            return EGranularity.M5;
+            switch (periodInMinutes)
+            {
+                case 5:
+                    return EGranularity.M5;
+                case 10:
+                    return EGranularity.M10;
+                case 15:
+                    return EGranularity.M15;
+                case 30:
+                    return EGranularity.M30;
+                case 60:
+                    return EGranularity.H1;
+                case 120:
+                    return EGranularity.H2;
+                case 180:
+                    return EGranularity.H3;
+                case 240:
+                    return EGranularity.H4;
+                case 360:
+                    return EGranularity.H6;
+                case 480:
+                    return EGranularity.H8;
+                case 720:
+                    return EGranularity.H12;
+                case 1440:
+                    return EGranularity.D;
+                case 10080:
+                    return EGranularity.W;
+                default:
+                    return EGranularity.S5;
+            }
         }
 
         private static Instrument GetInstrument(string instrument)
@@ -187,5 +194,36 @@
         }
 
         #endregion
+
+        public IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime=null)
+        {
+            if (string.IsNullOrWhiteSpace(instrument))
+            {
+                throw new ArgumentException("Empty instrument");
+            }
+
+            instrument = instrument.Trim();
+            if (instrument.Length != 7)
+            {
+                throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
+            }
+
+            var candleResponse =
+                this.proxy.GetCandlesAsync(new CandlesRequest
+                {
+                    candleFormat = ECandleFormat.midpoint,
+                    count = nbOfCandles+1,
+                    granularity = GetGranularity(periodInMinutes),
+                    instrument = instrument,
+                    end = endDateTime.HasValue ? endDateTime.Value.ToUniversalTime().ToString("yy-MM-ddTHH:mm") : null
+                }).Result;
+            var candles =
+                candleResponse.Where(x => x.complete)
+                .OrderByDescending(x => x.time)
+                .Select(x => new Candle(x.openMid, x.highMid, x.lowMid, x.closeMid, x.time.SafeParseDate().GetValueOrDefault()))
+                .ToList();
+
+            return candles;
+        }
     }
 }

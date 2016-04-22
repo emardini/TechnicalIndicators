@@ -47,10 +47,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Profiles" />
     <Folder Include="TraderWRContent\" />
   </ItemGroup>
   <ItemGroup>
     <DiagnosticsConfiguration Include="TraderWRContent\diagnostics.wadcfgx" />
+  </ItemGroup>
+  <ItemGroup>
+    <PublishProfile Include="Profiles\ForexCobraEURUSDProduction.azurePubxml" />
   </ItemGroup>
   <!-- Import the target files for this project template -->
   <PropertyGroup>

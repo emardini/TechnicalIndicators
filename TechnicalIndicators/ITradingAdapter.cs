@@ -1,5 +1,8 @@
 ﻿namespace TechnicalIndicators
 {
+    using System;
+    using System.Collections.Generic;
+
     public interface ITradingAdapter
     {
         bool HasOpenOrder(int accountId);
@@ -16,5 +19,7 @@
         void UpdateTrade(Trade updatedTrade);
 
         AccountInformation GetAccountInformation(int accountId);
+
+        IEnumerable<Candle> GetLastCandles(string p1, int p2, int p3, DateTime? endDateTime=null);
     }
 }

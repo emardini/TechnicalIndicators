@@ -57,11 +57,13 @@ namespace TraderWR
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/labs/v1/",
-                "XXXXXXXXXXXXXX");
+                "5731b0b44dd7ef89b2fe1260a4c4f5b9-ec9cefddd928ec5a3b93562b7292a0c7");
+
+            var candles = adapter.GetLastCandles("EUR_USD", 10, 150);
 
             this.kernel = new StandardKernel();
             this.kernel.Bind<Cobra>()
-                .ToConstant(new Cobra(new Adx(14), new List<Candle>(), new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, 0))
+                .ToConstant(new Cobra(new Adx(14), candles, new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, 5027596))
                 .InSingletonScope();
 
             this.kernel.Bind<IRateProvider>()
@@ -117,7 +119,7 @@ namespace TraderWR
                 .StartNow() 
                 .WithDescription("Rates")                
                 .WithSimpleSchedule(x => x
-                    .WithIntervalInSeconds(5)
+                    .WithIntervalInSeconds(15)
                     .RepeatForever())
                 .Build();
 
@@ -125,7 +127,7 @@ namespace TraderWR
               .StartNow() 
               .WithDescription("Candles")
               .WithSimpleSchedule(x => x
-                  .WithIntervalInSeconds(10)
+                  .WithIntervalInSeconds(150)
                   .RepeatForever())
               .Build();
 

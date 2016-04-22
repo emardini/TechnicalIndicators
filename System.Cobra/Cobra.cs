@@ -21,6 +21,8 @@
 
         private const decimal BaseRiskPercentage = 0.02m;
 
+        private const decimal DolarsByPip = 0.0001m;
+
         #endregion
 
         #region Fields
@@ -96,8 +98,7 @@
                 throw new ArgumentNullException("instrument");
             }
 
-            this.adx = adx;
-            this.candles = initialCandles.ToList();
+            this.adx = adx;            
             this.fastEmaHigh = fastEmaHigh;
             this.fastEmaLow = fastEmaLow;
             this.slowSmaHigh = slowSmaHigh;
@@ -107,6 +108,12 @@
             this.tradingAdapter = tradingAdapter;
             this.AccountId = accountId;
             this.PeriodInMinutes = periodInMinutes;
+
+            this.candles = new List<Candle>();
+            foreach (var candle in initialCandles)
+            {
+                this.AddCandle(candle);
+            }
 
             this.Id = Guid.NewGuid().ToString();
         }
@@ -154,6 +161,11 @@
 
         public void AddCandle(Candle newCandle)
         {
+            if (this.candles.Any(x => x.Timestamp == newCandle.Timestamp))
+            {
+                return;
+            }
+
             this.candles.Add(newCandle);
             this.adx.Add(newCandle);
             this.fastEmaHigh.Add(newCandle.High);
@@ -170,8 +182,8 @@
                 return false;
             }
 
-            var slowSmaHighValue = this.slowSmaHigh.Values.FirstOrDefault();
-            var fastEmaHighValue = this.fastEmaHigh.Values.FirstOrDefault();
+            var slowSmaHighValue = this.slowSmaHigh.Values.LastOrDefault();
+            var fastEmaHighValue = this.fastEmaHigh.Values.LastOrDefault();
 
             if (slowSmaHighValue > rate.Ask)
             {
@@ -215,7 +227,7 @@
                 return false;
             }
 
-            var currentAdxValue = this.adx.Values.FirstOrDefault();
+            var currentAdxValue = this.adx.Values.FirstOrDefault()*100m;
             if (currentAdxValue < AdxTrendLevel)
             {
                 return false;
@@ -275,7 +287,7 @@
 
         public bool IsBannedDay()
         {
-            var currentDate = this.dateProvider.GetCurrentUtcDate();
+            var currentDate = this.dateProvider.GetCurrentDate();
             return currentDate.DayOfWeek == DayOfWeek.Friday
                    || currentDate.DayOfWeek == DayOfWeek.Saturday
                    || currentDate.DayOfWeek == DayOfWeek.Sunday;
@@ -316,11 +328,12 @@
             }
         }
 
-        private int CalculatePositionSize()
+        private int CalculatePositionSize(decimal stopLoss)
         {
             var accountInformation = tradingAdapter.GetAccountInformation(AccountId);
-            var positionSize = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault() * BaseRiskPercentage;
+            var maxRiskAmount = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault() * BaseRiskPercentage;
 
+            var positionSize = (maxRiskAmount / stopLoss) / DolarsByPip;
             //TODO: Use account balance and Kelly Criterior to calculate position size
             return (int)positionSize;
         }
@@ -329,11 +342,11 @@
         {
             if (side == OrderSideBuy)
             {
-                var lowLimit = this.fastEmaLow.Values.FirstOrDefault();
+                var lowLimit = this.fastEmaLow.Values.LastOrDefault();
                 return (CurrentRate.Ask - lowLimit) * 10000m;
             }
 
-            var highLimit =  this.fastEmaHigh.Values.FirstOrDefault();
+            var highLimit =  this.fastEmaHigh.Values.LastOrDefault();
             return (highLimit - this.CurrentRate.Bid) * 10000m;
         }
 
@@ -344,8 +357,8 @@
                 return false;
             }
 
-            var slowSmaLowValue = this.slowSmaLow.Values.FirstOrDefault();
-            var fastEmaLowValue = this.fastEmaLow.Values.FirstOrDefault();
+            var slowSmaLowValue = this.slowSmaLow.Values.LastOrDefault();
+            var fastEmaLowValue = this.fastEmaLow.Values.LastOrDefault();
 
             if (slowSmaLowValue < rate.Bid)
             {
@@ -389,7 +402,7 @@
                 return false;
             }
 
-            var currentAdxValue = this.adx.Values.FirstOrDefault();
+            var currentAdxValue = this.adx.Values.FirstOrDefault()*100;
             if (currentAdxValue < AdxTrendLevel)
             {
                 return false;
@@ -403,9 +416,9 @@
         }
 
         private void PlaceOrder(string side)
-        {            
+        {
             var stopLossDistance = this.CalculateStopLossDistance(side);
-            var positionSizeInUnits = this.CalculatePositionSize();
+            var positionSizeInUnits = this.CalculatePositionSize(stopLossDistance);
             //TODO: Decide if to user lower-upper bounds or just market order and assume the slippage
             this.tradingAdapter.PlaceOrder(new Order
             {
