@@ -4,6 +4,7 @@
 *	Verify rates and candles completion
 	*	Make check rates call get last candle
 	*	Prevent adding repeated candles
+	*	Complete missing candles
 *	Compare adx calculation against other systems
 *	Add retries
 *	Health monitoring and alerts
