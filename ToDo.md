@@ -3,6 +3,7 @@
 *	Add rates, candles, orders and results in permanent store for backtesting, compalints and debugging
 *	Verify rates and candles completion
 	*	Make check rates call get last candle
+	*	Prevent adding repeated candles
 *	Compare adx calculation against other systems
 *	Add retries
 *	Health monitoring and alerts
