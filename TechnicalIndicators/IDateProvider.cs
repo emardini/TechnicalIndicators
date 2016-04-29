@@ -6,10 +6,8 @@
     {
         #region Public Methods and Operators
 
-        DateTime GetCurrentUtcDate();
+        DateTime GetCurrentDate();
 
         #endregion
-
-        DateTime GetCurrentDate();
     }
 }

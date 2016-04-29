@@ -23,6 +23,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrokerAdapter.BackTest", "B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackTestAdapterConsole", "BackTestAdapterConsole\BackTestAdapterConsole.csproj", "{CA37DF97-D246-4149-A879-E8C9D3C5D4FF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{36B64217-9786-4600-B2D8-C7CC923AC1D5}"
+	ProjectSection(SolutionItems) = preProject
+		ToDo.md = ToDo.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

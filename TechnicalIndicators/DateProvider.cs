@@ -6,11 +6,6 @@
     {
         #region Public Methods and Operators
 
-        public DateTime GetCurrentUtcDate()
-        {
-            return DateTime.UtcNow;
-        }
-
         public DateTime GetCurrentDate()
         {
             return DateTime.Now;
