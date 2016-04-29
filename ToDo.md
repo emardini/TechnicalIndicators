@@ -18,7 +18,7 @@
 	*	No trend
 	*	Exit
 	*	Stop losses
-*	~~Make data provider to get east time
+*	~~Make data provider to get east time~~
 *	Validate the candle timestamp matches the rate date
 *	Define if restrictions apply by time of the day
 *	Make list of all posible risks, unexpected or undesirable events
