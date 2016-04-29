@@ -25,3 +25,4 @@
 *	What happen if the system cannot get rates?
 *	Validates the amount of data required to calculate indicators, including any holes in data
 *	Define rule to restrict transactions based on the size of stop loss
+*	Implement function to calculate the period based on the values passed by parameter
