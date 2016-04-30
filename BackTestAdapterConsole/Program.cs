@@ -17,7 +17,7 @@
 
         private static void Main(string[] args)
         {
-            var backTestAdspater = new BackTestAdapter();
+            var backTestAdapter = new BackTestAdapter();
 
             const string Instrument = "EUR_USD";
 
@@ -25,14 +25,14 @@
             var dataPoints = ToEmptyItemList(dataPoint);
             for (var index = 0; index < 350; index++)
             {
-                var rate = backTestAdspater.GetRate(Instrument);
-                var candle = backTestAdspater.GetLastCandle(Instrument, 10, rate.Time);
+                var rate = backTestAdapter.GetRate(Instrument);
+                var candle = backTestAdapter.GetLastCandle(Instrument, 10, rate.Time);
                 if(candle == null) continue;
                 dataPoints.Add(new { r = rate.Ask, rt=rate.Time, h=candle.High, l=candle.Low, o=candle.Open, c=candle.Close, ct=candle.Timestamp });
                 Console.WriteLine("L:{0}, H:{1}, CT:{2}, R:{3}, RT:{4}", candle.Low, candle.High, candle.Timestamp, rate.Ask, rate.Time);   
             }
 
-            backTestAdspater.Reset();
+            backTestAdapter.Reset();
 
             using (TextWriter writer = File.CreateText("output.csv"))
             {
@@ -47,18 +47,16 @@
                 new Sma(72),
                 new Sma(72),
                 new SimpleDateProvider(),
-                "EUR_USD",
+                Instrument,
                 10,
-                backTestAdspater,
-                5027596);
+                backTestAdapter,
+                backTestAdapter,
+                5027596,
+                true);
 
             for (var i = 0; i < 330; i++)
             {
-                var rate = backTestAdspater.GetRate("EUR_USD");
-                system.CheckRate(rate);
-
-                var candle = backTestAdspater.GetLastCandle(system.Instrument, system.PeriodInMinutes, rate.Time);
-                system.AddCandle(candle);
+                system.CheckRate();
             }
 
             Console.ReadKey();

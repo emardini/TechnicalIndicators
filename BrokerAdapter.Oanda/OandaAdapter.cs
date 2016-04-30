@@ -16,6 +16,8 @@
 
     public class OandaAdapter : IRateProvider, ITradingAdapter
     {
+        private const string StatusHalted = "halted";
+
         #region Fields
 
         private readonly Rest proxy;
@@ -45,6 +47,12 @@
             return this.GetLastCandles(instrument, periodInMinutes, 1, endDateTime).FirstOrDefault();
         }
 
+        public bool IsInstrumentHalted(string instrument)
+        {
+            var testPrice = this.GetLastPrices(instrument).FirstOrDefault();
+            return testPrice == null || testPrice.status == StatusHalted;
+        }
+
         public Trade GetOpenTrade(int accountId)
         {
             var response =
@@ -70,6 +78,17 @@
 
         public Rate GetRate(string instrument)
         {
+            var rateResponse = this.GetLastPrices(instrument);
+            var rate =
+                rateResponse.Select(
+                    x => new Rate { Ask = x.ask, Bid = x.bid, Instrument = instrument, Time = x.time.SafeParseDate().GetValueOrDefault() })
+                    .FirstOrDefault();
+
+            return rate;
+        }
+
+        private IEnumerable<Price> GetLastPrices(string instrument)
+        {
             if (string.IsNullOrWhiteSpace(instrument))
             {
                 throw new ArgumentException("Empty instrument");
@@ -85,12 +104,7 @@
             var rateResponse =
                 this.proxy.GetRatesAsync(new List<Instrument> { instrumentPar })
                     .Result;
-            var candle =
-                rateResponse.Select(
-                    x => new Rate { Ask = x.ask, Bid = x.bid, Instrument = instrument, Time = x.time.SafeParseDate().GetValueOrDefault() })
-                    .FirstOrDefault();
-
-            return candle;
+            return rateResponse;
         }
 
         public bool HasOpenOrder(int accountId)

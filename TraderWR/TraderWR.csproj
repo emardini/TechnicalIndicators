@@ -100,7 +100,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UpdateCandlesJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CheckRatesJob.cs" />
     <Compile Include="WorkerRole.cs" />

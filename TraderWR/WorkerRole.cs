@@ -63,7 +63,7 @@ namespace TraderWR
 
             this.kernel = new StandardKernel();
             this.kernel.Bind<Cobra>()
-                .ToConstant(new Cobra(new Adx(14), candles, new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, 5027596))
+                .ToConstant(new Cobra(new Adx(14), candles, new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, adapter, 5027596))
                 .InSingletonScope();
 
             this.kernel.Bind<IRateProvider>()
@@ -113,7 +113,6 @@ namespace TraderWR
 
             // define the job and tie it to our WorkerJob class
             var jobRate = JobBuilder.Create<CheckRatesJob>().Build();
-            var jobCandle = JobBuilder.Create<UpdateCandlesJob>().Build();
 
             var ratesTrigger = TriggerBuilder.Create()
                 .StartNow() 
@@ -123,16 +122,7 @@ namespace TraderWR
                     .RepeatForever())
                 .Build();
 
-            var candlesTrigger = TriggerBuilder.Create()
-              .StartNow() 
-              .WithDescription("Candles")
-              .WithSimpleSchedule(x => x
-                  .WithIntervalInSeconds(150)
-                  .RepeatForever())
-              .Build();
-
             this.scheduler.ScheduleJob(jobRate, ratesTrigger);
-            this.scheduler.ScheduleJob(jobCandle, candlesTrigger);
 
             this.scheduler.Start();
         }

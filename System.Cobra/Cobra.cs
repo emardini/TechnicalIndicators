@@ -11,6 +11,14 @@
 
         private const int AdxTrendLevel = 22;
 
+        private const decimal BaseRiskPercentage = 0.02m;
+
+        private const decimal DolarsByPip = 0.0001m;
+
+        private const int MaxRateStaleTime = 2;
+
+        private const int MinNbOfCandles = 72;
+
         private const string OrderSideBuy = "buy";
 
         private const string OrderSideSell = "sell";
@@ -18,10 +26,6 @@
         private const string OrderTypeMarket = "market";
 
         private const int Slippage = 5;
-
-        private const decimal BaseRiskPercentage = 0.02m;
-
-        private const decimal DolarsByPip = 0.0001m;
 
         #endregion
 
@@ -37,7 +41,9 @@
 
         private readonly Ema fastEmaLow;
 
-        private readonly string instrument;
+        private readonly bool isBackTest;
+
+        private readonly IRateProvider rateProvider;
 
         private readonly Sma slowSmaHigh;
 
@@ -59,7 +65,9 @@
             string instrument,
             int periodInMinutes,
             ITradingAdapter tradingAdapter,
-            int accountId)
+            IRateProvider rateProvider,
+            int accountId,
+            bool isBackTest = false)
         {
             if (adx == null)
             {
@@ -93,26 +101,36 @@
             {
                 throw new ArgumentNullException("tradingAdapter");
             }
+            if (rateProvider == null)
+            {
+                throw new ArgumentNullException("rateProvider");
+            }
             if (string.IsNullOrWhiteSpace(instrument))
             {
                 throw new ArgumentNullException("instrument");
             }
 
-            this.adx = adx;            
+            this.adx = adx;
             this.fastEmaHigh = fastEmaHigh;
             this.fastEmaLow = fastEmaLow;
             this.slowSmaHigh = slowSmaHigh;
             this.slowSmaLow = slowSmaLow;
             this.dateProvider = dateProvider;
-            this.instrument = instrument;
+            this.Instrument = instrument;
             this.tradingAdapter = tradingAdapter;
+            this.rateProvider = rateProvider;
+            this.isBackTest = isBackTest;
             this.AccountId = accountId;
             this.PeriodInMinutes = periodInMinutes;
 
             this.candles = new List<Candle>();
-            foreach (var candle in initialCandles)
+            try
             {
-                this.AddCandle(candle);
+                this.AddCandles(initialCandles);
+            }
+            catch (Exception)
+            {
+                //Log
             }
 
             this.Id = Guid.NewGuid().ToString();
@@ -128,10 +146,7 @@
 
         public string Id { get; private set; }
 
-        public string Instrument
-        {
-            get { return this.instrument; }
-        }
+        public string Instrument { get; private set; }
 
         public int PeriodInMinutes { get; private set; }
 
@@ -164,6 +179,15 @@
             if (this.candles.Any(x => x.Timestamp == newCandle.Timestamp))
             {
                 return;
+            }
+
+            var lastCandle = this.candles.LastOrDefault();
+            if (lastCandle != null)
+            {
+                if ((newCandle.Timestamp - lastCandle.Timestamp).Minutes != this.PeriodInMinutes)
+                {
+                    throw new Exception("The new candle does not follow the sequence");
+                }
             }
 
             this.candles.Add(newCandle);
@@ -227,7 +251,7 @@
                 return false;
             }
 
-            var currentAdxValue = this.adx.Values.FirstOrDefault()*100m;
+            var currentAdxValue = this.adx.Values.FirstOrDefault() * 100m;
             if (currentAdxValue < AdxTrendLevel)
             {
                 return false;
@@ -244,16 +268,70 @@
         ///     Should happen every minute because the check needs to be frequent,
         ///     but the candles are queried in the predefined timeframe
         /// </summary>
-        public void CheckRate(Rate newRate)
+        public void CheckRate()
         {
-            this.CurrentRate = newRate;
-
-            if (adx.Values.Count() < 25)
+            if (this.rateProvider.IsInstrumentHalted(this.Instrument))
             {
                 return;
             }
 
-            //Check indicators have enough data
+            var newRate = this.rateProvider.GetRate(this.Instrument);
+            if (newRate.Time <= this.CurrentRate.Time)
+            {
+                return;
+            }
+
+            if (!this.isBackTest)
+            {
+                var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time;
+                if (systemTimeDiff.Minutes >= MaxRateStaleTime)
+                {
+                    //Meaning rate reading is stale
+                    return;
+                }
+            }
+
+            this.CurrentRate = newRate;
+
+            var nbOfRequiredCandles = 1;
+            var lastCandle = this.candles.LastOrDefault();
+            if (lastCandle != null)
+            {
+                nbOfRequiredCandles = (this.CurrentRate.Time - lastCandle.Timestamp).Minutes / this.PeriodInMinutes;
+            }
+
+            if (nbOfRequiredCandles > 0)
+            {
+                var requiredCandles = this.rateProvider.GetLastCandles(this.Instrument,
+                    this.PeriodInMinutes,
+                    nbOfRequiredCandles,
+                    this.CurrentRate.Time).ToList();
+                if (requiredCandles.Count() < nbOfRequiredCandles)
+                {
+                    return;
+                }
+                var hasError = false;
+                try
+                {
+                    this.AddCandles(requiredCandles);
+                }
+                catch (Exception)
+                {
+                    //Log
+                    hasError = true;
+                }
+
+                if (hasError)
+                {
+                    return;
+                }
+            }
+
+            if (!this.ValidateIndicatorsState())
+            {
+                return;
+            }
+
             if (this.tradingAdapter.HasOpenOrder(this.AccountId))
             {
                 return;
@@ -278,13 +356,13 @@
                 }
             }
 
-            if (this.CanGoLong(newRate))
+            if (this.CanGoLong(this.CurrentRate))
             {
                 this.PlaceOrder(OrderSideBuy);
                 return;
             }
 
-            if (this.CanGoShort(newRate))
+            if (this.CanGoShort(this.CurrentRate))
             {
                 this.PlaceOrder(OrderSideSell);
             }
@@ -333,9 +411,33 @@
             }
         }
 
+        private void AddCandles(IEnumerable<Candle> initialCandles)
+        {
+            var sortedCandles = initialCandles.OrderBy(x => x.Timestamp).ToList();
+            if (!sortedCandles.Any())
+            {
+                return;
+            }
+
+            var previousCandle = sortedCandles.First();
+            foreach (var candle in sortedCandles.Skip(1))
+            {
+                if ((candle.Timestamp - previousCandle.Timestamp).Minutes != this.PeriodInMinutes)
+                {
+                    throw new Exception("The list of candles do not follow the sequence");
+                }
+                previousCandle = candle;
+            }
+
+            foreach (var candle in sortedCandles)
+            {
+                this.AddCandle(candle);
+            }
+        }
+
         private int CalculatePositionSize(decimal stopLoss)
         {
-            var accountInformation = tradingAdapter.GetAccountInformation(AccountId);
+            var accountInformation = this.tradingAdapter.GetAccountInformation(this.AccountId);
             var maxRiskAmount = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault() * BaseRiskPercentage;
 
             var positionSize = (maxRiskAmount / stopLoss) / DolarsByPip;
@@ -348,10 +450,10 @@
             if (side == OrderSideBuy)
             {
                 var lowLimit = this.fastEmaLow.Values.LastOrDefault();
-                return (CurrentRate.Ask - lowLimit) * 10000m;
+                return (this.CurrentRate.Ask - lowLimit) * 10000m;
             }
 
-            var highLimit =  this.fastEmaHigh.Values.LastOrDefault();
+            var highLimit = this.fastEmaHigh.Values.LastOrDefault();
             return (highLimit - this.CurrentRate.Bid) * 10000m;
         }
 
@@ -407,7 +509,7 @@
                 return false;
             }
 
-            var currentAdxValue = this.adx.Values.FirstOrDefault()*100;
+            var currentAdxValue = this.adx.Values.FirstOrDefault() * 100;
             if (currentAdxValue < AdxTrendLevel)
             {
                 return false;
@@ -427,12 +529,12 @@
             //TODO: Decide if to user lower-upper bounds or just market order and assume the slippage
             this.tradingAdapter.PlaceOrder(new Order
             {
-                Instrument = this.instrument,
+                Instrument = this.Instrument,
                 Units = positionSizeInUnits,
                 Side = side,
                 OrderType = OrderTypeMarket,
                 TrailingStop = stopLossDistance,
-                AcountId = AccountId
+                AcountId = this.AccountId
             });
         }
 
@@ -455,19 +557,26 @@
             }
 
             return true;
-                //This should not happen, but in case it happens, it could be wise to close the trade or maybe send a notification                
+            //This should not happen, but in case it happens, it could be wise to close the trade or maybe send a notification                
         }
 
         private bool ShouldModifyTrade(Trade currentTrade)
         {
-            decimal? spread = (CurrentRate.Ask - CurrentRate.Bid)/2;
+            decimal? spread = (this.CurrentRate.Ask - this.CurrentRate.Bid) / 2;
             switch (currentTrade.Side)
             {
-                case OrderSideBuy:                    
+                case OrderSideBuy:
                     return currentTrade.TrailingAmount >= currentTrade.Price + spread + Slippage;
                 default:
                     return currentTrade.TrailingAmount <= currentTrade.Price - spread - Slippage;
             }
+        }
+
+        private bool ValidateIndicatorsState()
+        {
+            return
+                this.candles.Count() >= MinNbOfCandles
+                && (this.candles.Last().Timestamp - this.CurrentRate.Time).Minutes <= this.PeriodInMinutes;
         }
 
         #endregion

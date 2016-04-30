@@ -6,29 +6,19 @@
 
     using Quartz;
 
-    using TechnicalIndicators;
-
     [DisallowConcurrentExecution]
     public class CheckRatesJob : IJob
     {
         private readonly Cobra tradingSystem;
 
-        private readonly IRateProvider rateProvider;
-
-        public CheckRatesJob(Cobra tradingSystem, IRateProvider rateProvider)
+        public CheckRatesJob(Cobra tradingSystem)
         {
             if (tradingSystem == null)
             {
                 throw new ArgumentNullException("tradingSystem");
             }
 
-            if (rateProvider == null)
-            {
-                throw new ArgumentNullException("rateProvider");
-            }
-
             this.tradingSystem = tradingSystem;
-            this.rateProvider = rateProvider;
         }      
 
         #region Public Methods and Operators
@@ -37,9 +27,8 @@
         {
             Trace.TraceInformation("Trade Job {0} - Agent {1}", DateTime.Now, tradingSystem.Id);
             try
-            {
-                var rate = rateProvider.GetRate("EUR_USD");
-                this.tradingSystem.CheckRate(rate);
+            {               
+                this.tradingSystem.CheckRate();
             }
             catch (Exception ex)
             {

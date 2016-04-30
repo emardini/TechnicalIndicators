@@ -9,5 +9,7 @@
         DateTime GetCurrentDate();
 
         #endregion
+
+        DateTime GetCurrentUtcDate();
     }
 }

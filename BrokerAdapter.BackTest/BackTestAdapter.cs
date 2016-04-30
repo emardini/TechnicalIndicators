@@ -67,6 +67,11 @@
             return this.GetLastCandles(instrument, periodInMinutes, 1, endDateTime).FirstOrDefault();
         }
 
+        public bool IsInstrumentHalted(string instrument)
+        {
+            return false;
+        }
+
         public IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime = null)
         {
             var sortedCandles = this.candles.OrderBy(x => x.Timestamp);

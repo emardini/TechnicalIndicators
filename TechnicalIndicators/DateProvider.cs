@@ -11,6 +11,11 @@
             return DateTime.Now;
         }
 
+        public DateTime GetCurrentUtcDate()
+        {
+            return DateTime.UtcNow;
+        }
+
         #endregion
     }
 }
