@@ -1,8 +1,10 @@
 namespace TraderWR
 {
+    using System;
     using System.Cobra;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
@@ -57,9 +59,17 @@ namespace TraderWR
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/labs/v1/",
-                "5731b0b44dd7ef89b2fe1260a4c4f5b9-ec9cefddd928ec5a3b93562b7292a0c7");
+                "xxx");
 
-            var candles = adapter.GetLastCandles("EUR_USD", 10, 150);
+            var candles = new List<Candle>();
+            try
+            {
+                candles = adapter.GetLastCandles("EUR_USD", 10, 150).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
 
             this.kernel = new StandardKernel();
             this.kernel.Bind<Cobra>()

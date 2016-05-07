@@ -251,15 +251,13 @@
                 return false;
             }
 
-            var currentAdxValue = this.adx.Values.FirstOrDefault() * 100m;
+            var currentAdxValue = this.adx.Values.LastOrDefault() * 100m;
             if (currentAdxValue < AdxTrendLevel)
             {
                 return false;
             }
 
-            var previousAdxValue = this.adx.Values.Skip(1)
-                .Take(1)
-                .FirstOrDefault();
+            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault();
 
             return currentAdxValue > previousAdxValue;
         }
@@ -276,7 +274,7 @@
             }
 
             var newRate = this.rateProvider.GetRate(this.Instrument);
-            if (newRate.Time <= this.CurrentRate.Time)
+            if (this.CurrentRate != null && newRate.Time <= this.CurrentRate.Time)
             {
                 return;
             }
@@ -509,15 +507,13 @@
                 return false;
             }
 
-            var currentAdxValue = this.adx.Values.FirstOrDefault() * 100;
+            var currentAdxValue = this.adx.Values.LastOrDefault() * 100;
             if (currentAdxValue < AdxTrendLevel)
             {
                 return false;
             }
 
-            var previousAdxValue = this.adx.Values.Skip(1)
-                .Take(1)
-                .FirstOrDefault();
+            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault();
 
             return currentAdxValue > previousAdxValue;
         }

@@ -16,7 +16,11 @@
 
     public class OandaAdapter : IRateProvider, ITradingAdapter
     {
+        #region Constants
+
         private const string StatusHalted = "halted";
+
+        #endregion
 
         #region Fields
 
@@ -47,10 +51,48 @@
             return this.GetLastCandles(instrument, periodInMinutes, 1, endDateTime).FirstOrDefault();
         }
 
-        public bool IsInstrumentHalted(string instrument)
+        public IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime = null)
         {
-            var testPrice = this.GetLastPrices(instrument).FirstOrDefault();
-            return testPrice == null || testPrice.status == StatusHalted;
+            if (string.IsNullOrWhiteSpace(instrument))
+            {
+                throw new ArgumentException("Empty instrument");
+            }
+
+            instrument = instrument.Trim();
+            if (instrument.Length != 7)
+            {
+                throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
+            }
+
+            List<Candle> candles;
+            try
+            {
+                var endTimeRef = endDateTime.HasValue ? endDateTime.Value : DateTime.UtcNow;
+                var startTimeRef = endTimeRef.AddMinutes(-nbOfCandles * periodInMinutes - 1);
+                var candleResponse =
+                    this.proxy.GetCandlesAsync(new CandlesRequest
+                    {
+                        candleFormat = ECandleFormat.midpoint,
+                        granularity = GetGranularity(periodInMinutes),
+                        instrument = instrument,
+                        count = null,
+                        includeFirst = true,
+                        end = Uri.EscapeDataString(endTimeRef.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")),
+                        start = Uri.EscapeDataString(startTimeRef.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"))
+                    }).Result;
+
+                candles = candleResponse.Where(x => x.complete)
+                    .OrderByDescending(x => x.time)
+                    .Select(x => new Candle(x.openMid, x.highMid, x.lowMid, x.closeMid, x.time.SafeParseDate().GetValueOrDefault()))
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return candles;
         }
 
         public Trade GetOpenTrade(int accountId)
@@ -87,26 +129,6 @@
             return rate;
         }
 
-        private IEnumerable<Price> GetLastPrices(string instrument)
-        {
-            if (string.IsNullOrWhiteSpace(instrument))
-            {
-                throw new ArgumentException("Empty instrument");
-            }
-
-            instrument = instrument.Trim();
-            if (instrument.Length != 7)
-            {
-                throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
-            }
-
-            var instrumentPar = GetInstrument(instrument);
-            var rateResponse =
-                this.proxy.GetRatesAsync(new List<Instrument> { instrumentPar })
-                    .Result;
-            return rateResponse;
-        }
-
         public bool HasOpenOrder(int accountId)
         {
             var response =
@@ -121,6 +143,12 @@
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
 
             return response.Any();
+        }
+
+        public bool IsInstrumentHalted(string instrument)
+        {
+            var testPrice = this.GetLastPrices(instrument).FirstOrDefault();
+            return testPrice == null || testPrice.status == StatusHalted;
         }
 
         public void PlaceOrder(Order order)
@@ -207,9 +235,7 @@
             };
         }
 
-        #endregion
-
-        public IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime=null)
+        private IEnumerable<Price> GetLastPrices(string instrument)
         {
             if (string.IsNullOrWhiteSpace(instrument))
             {
@@ -222,22 +248,13 @@
                 throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
             }
 
-            var candleResponse =
-                this.proxy.GetCandlesAsync(new CandlesRequest
-                {
-                    candleFormat = ECandleFormat.midpoint,
-                    count = nbOfCandles+1,
-                    granularity = GetGranularity(periodInMinutes),
-                    instrument = instrument,
-                    end = endDateTime.HasValue ? endDateTime.Value.ToUniversalTime().ToString("yy-MM-ddTHH:mm") : null
-                }).Result;
-            var candles =
-                candleResponse.Where(x => x.complete)
-                .OrderByDescending(x => x.time)
-                .Select(x => new Candle(x.openMid, x.highMid, x.lowMid, x.closeMid, x.time.SafeParseDate().GetValueOrDefault()))
-                .ToList();
-
-            return candles;
+            var instrumentPar = GetInstrument(instrument);
+            var rateResponse =
+                this.proxy.GetRatesAsync(new List<Instrument> { instrumentPar })
+                    .Result;
+            return rateResponse;
         }
+
+        #endregion
     }
 }
