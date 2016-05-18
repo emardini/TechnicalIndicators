@@ -38,9 +38,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackTestAdapter.cs" />
+    <Compile Include="FixedDateBackTestProvider.cs" />
+    <Compile Include="HistoricalBackTestAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BrokerAdapter.Oanda\BrokerAdapter.Oanda.csproj">
+      <Project>{3b8f638c-bbfb-4831-8530-fa309cecd770}</Project>
+      <Name>BrokerAdapter.Oanda</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TechnicalIndicators\TechnicalIndicators.csproj">
       <Project>{5f9157fd-46d7-43e5-a2fb-b9d6b30ab0d7}</Project>
       <Name>TechnicalIndicators</Name>

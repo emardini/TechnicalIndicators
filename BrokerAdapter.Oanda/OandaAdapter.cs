@@ -18,6 +18,10 @@
     {
         #region Constants
 
+        private const string DateFormat = "yyyy-MM-ddTHH:mm:ssZ";
+
+        private const int MinInstrumentLenght = 7;
+
         private const string StatusHalted = "halted";
 
         #endregion
@@ -39,19 +43,27 @@
 
         #region Public Methods and Operators
 
-        public void CloseTrade(int accountId, long tradeId)
+        public virtual void CloseTrade(int accountId, long tradeId)
         {
             //TODO: Implement retries and notification in case the system cannot close the trade.
             //Which actions can it take if is not possible to close the order
             var response = this.proxy.DeleteTradeAsync(accountId, tradeId).Result;
         }
 
-        public Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
+        public virtual AccountInformation GetAccountInformation(int accountId)
+        {
+            var response =
+                this.proxy.GetAccountDetailsAsync(accountId).Result;
+
+            return new AccountInformation { AccountId = response.accountId, AccountCurrency = response.accountCurrency, Balance = response.balance };
+        }
+
+        public virtual Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
         {
             return this.GetLastCandles(instrument, periodInMinutes, 1, endDateTime).FirstOrDefault();
         }
 
-        public IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime = null)
+        public virtual IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime = null)
         {
             if (string.IsNullOrWhiteSpace(instrument))
             {
@@ -59,7 +71,7 @@
             }
 
             instrument = instrument.Trim();
-            if (instrument.Length != 7)
+            if (instrument.Length != MinInstrumentLenght)
             {
                 throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
             }
@@ -77,12 +89,12 @@
                         instrument = instrument,
                         count = null,
                         includeFirst = true,
-                        end = Uri.EscapeDataString(endTimeRef.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")),
-                        start = Uri.EscapeDataString(startTimeRef.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"))
+                        end = Uri.EscapeDataString(endTimeRef.ToUniversalTime().ToString(DateFormat)),
+                        start = Uri.EscapeDataString(startTimeRef.ToUniversalTime().ToString(DateFormat))
                     }).Result;
 
                 candles = candleResponse.Where(x => x.complete)
-                    .OrderByDescending(x => x.time)
+                    .OrderBy(x => x.time)
                     .Select(x => new Candle(x.openMid, x.highMid, x.lowMid, x.closeMid, x.time.SafeParseDate().GetValueOrDefault()))
                     .ToList();
             }
@@ -95,7 +107,7 @@
             return candles;
         }
 
-        public Trade GetOpenTrade(int accountId)
+        public virtual Trade GetOpenTrade(int accountId)
         {
             var response =
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
@@ -118,7 +130,7 @@
                         }).FirstOrDefault();
         }
 
-        public Rate GetRate(string instrument)
+        public virtual Rate GetRate(string instrument)
         {
             var rateResponse = this.GetLastPrices(instrument);
             var rate =
@@ -129,7 +141,7 @@
             return rate;
         }
 
-        public bool HasOpenOrder(int accountId)
+        public virtual bool HasOpenOrder(int accountId)
         {
             var response =
                 this.proxy.GetOrderListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
@@ -137,7 +149,7 @@
             return response.Any();
         }
 
-        public bool HasOpenTrade(int accountId)
+        public virtual bool HasOpenTrade(int accountId)
         {
             var response =
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
@@ -145,13 +157,13 @@
             return response.Any();
         }
 
-        public bool IsInstrumentHalted(string instrument)
+        public virtual bool IsInstrumentHalted(string instrument)
         {
             var testPrice = this.GetLastPrices(instrument).FirstOrDefault();
             return testPrice == null || testPrice.status == StatusHalted;
         }
 
-        public void PlaceOrder(Order order)
+        public virtual void PlaceOrder(Order order)
         {
             var result = this.proxy.PostOrderAsync(order.AcountId,
                 new Dictionary<string, string>
@@ -164,7 +176,7 @@
                 }).Result;
         }
 
-        public void UpdateTrade(Trade updatedTrade)
+        public virtual void UpdateTrade(Trade updatedTrade)
         {
             var result = this.proxy.PatchTradeAsync(updatedTrade.AccountId,
                 updatedTrade.Id,
@@ -174,18 +186,6 @@
                     { "trailingStop", updatedTrade.TrailingStop.ToString(CultureInfo.InvariantCulture) },
                     { "stopLoss", updatedTrade.StopLoss.ToString(CultureInfo.InvariantCulture) }
                 }).Result;
-        }
-
-        #endregion
-
-        #region Explicit Interface Methods
-
-        AccountInformation ITradingAdapter.GetAccountInformation(int accountId)
-        {
-            var response =
-                this.proxy.GetAccountDetailsAsync(accountId).Result;
-
-            return new AccountInformation { AccountId = response.accountId, AccountCurrency = response.accountCurrency, Balance = response.balance };
         }
 
         #endregion
@@ -243,7 +243,7 @@
             }
 
             instrument = instrument.Trim();
-            if (instrument.Length != 7)
+            if (instrument.Length != MinInstrumentLenght)
             {
                 throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
             }

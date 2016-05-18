@@ -56,7 +56,7 @@
         #region Constructors and Destructors
 
         public Cobra(Adx adx,
-            IEnumerable<Candle> initialCandles,
+            //IEnumerable<Candle> initialCandles,
             Ema fastEmaHigh,
             Ema fastEmaLow,
             Sma slowSmaHigh,
@@ -73,10 +73,10 @@
             {
                 throw new ArgumentNullException("adx");
             }
-            if (initialCandles == null)
-            {
-                throw new ArgumentNullException("initialCandles");
-            }
+            //if (initialCandles == null)
+            //{
+            //    throw new ArgumentNullException("initialCandles");
+            //}
             if (fastEmaHigh == null)
             {
                 throw new ArgumentNullException("fastEmaHigh");
@@ -123,6 +123,7 @@
             this.AccountId = accountId;
             this.PeriodInMinutes = periodInMinutes;
 
+            var initialCandles = rateProvider.GetLastCandles(instrument, periodInMinutes, MinNbOfCandles).ToList();
             this.candles = new List<Candle>();
             try
             {
@@ -292,7 +293,7 @@
             this.CurrentRate = newRate;
 
             var nbOfRequiredCandles = 1;
-            var lastCandle = this.candles.LastOrDefault();
+            var lastCandle = this.candles.OrderByDescending(x=> x.Timestamp).LastOrDefault();
             if (lastCandle != null)
             {
                 nbOfRequiredCandles = (this.CurrentRate.Time - lastCandle.Timestamp).Minutes / this.PeriodInMinutes;

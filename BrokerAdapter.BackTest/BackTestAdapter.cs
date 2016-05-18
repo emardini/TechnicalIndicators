@@ -20,9 +20,6 @@
 
         private const int MaxNbOfUpCandles = 300;
 
-
-        
-
         #endregion
 
         #region Fields
@@ -59,17 +56,12 @@
 
         public AccountInformation GetAccountInformation(int accountId)
         {
-            return new AccountInformation(){Balance = "10000"};
+            return new AccountInformation { Balance = "10000" };
         }
 
         public Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
         {
             return this.GetLastCandles(instrument, periodInMinutes, 1, endDateTime).FirstOrDefault();
-        }
-
-        public bool IsInstrumentHalted(string instrument)
-        {
-            return false;
         }
 
         public IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime = null)
@@ -110,6 +102,11 @@
         public bool HasOpenTrade(int accountId)
         {
             return this.hasOpenTrade;
+        }
+
+        public bool IsInstrumentHalted(string instrument)
+        {
+            return false;
         }
 
         public void PlaceOrder(Order order)
