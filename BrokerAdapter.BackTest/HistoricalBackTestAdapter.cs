@@ -10,9 +10,16 @@
 
     public class HistoricalBackTestAdapter : OandaAdapter
     {
+        private const string OrderSideBuy = "buy";
+
+        private const string OrderSideSell = "sell";
+
+        private decimal balancePips;
         #region Fields
 
         private readonly List<Candle> historicalCandles;
+
+        private readonly double periodInMinutes;
 
         private readonly Random rateGenerator = new Random(DateTime.UtcNow.DayOfYear);
 
@@ -22,9 +29,11 @@
 
         private readonly int ticksInPeriod;
 
-        private int nbOfCalls;
+        private bool hasOrder;
 
-        private readonly double periodInMinutes;
+        private int nbOfCalls;
+        private Trade currentTrade;
+        private Rate CurrentRate;
 
         #endregion
 
@@ -64,7 +73,7 @@
 
             var firstCandle = this.historicalCandles.FirstOrDefault();
             var secondCandle = this.historicalCandles.Skip(1).Take(1).FirstOrDefault();
-            periodInMinutes = (secondCandle.Timestamp - firstCandle.Timestamp).TotalMinutes;
+            this.periodInMinutes = (secondCandle.Timestamp - firstCandle.Timestamp).TotalMinutes;
         }
 
         #endregion
@@ -73,6 +82,29 @@
 
         public override void CloseTrade(int accountId, long tradeId)
         {
+            var gainLoss = 0m;
+            if (this.currentTrade.Side == OrderSideBuy)
+            {
+                    gainLoss = CurrentRate.Bid - currentTrade.Price;
+                    Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
+                    currentTrade = null;
+                    balancePips += gainLoss;
+                    Console.WriteLine("Balance = {0}", balancePips);
+            }
+            else
+            {
+                    hasOrder = false;
+                    gainLoss = -CurrentRate.Ask + currentTrade.Price;
+                    Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
+                    currentTrade = null;
+                    balancePips += gainLoss;
+                    Console.WriteLine("Balance = {0}", balancePips);
+            }
+        }
+
+        public override Trade GetOpenTrade(int accountId)
+        {
+            return this.currentTrade;
         }
 
         public override Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
@@ -82,9 +114,9 @@
 
         public override IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime = null)
         {
-            var result =  endDateTime.HasValue
-                ? this.historicalCandles.Where(x => x.Timestamp <= endDateTime).OrderBy(x => x.Timestamp).Take(nbOfCandles)
-                : this.historicalCandles.Where(x => x.Timestamp <= this.startDate).OrderBy(x => x.Timestamp).Take(nbOfCandles);
+            var result = endDateTime.HasValue
+                ? this.historicalCandles.Where(x => x.Timestamp <= endDateTime).OrderByDescending(x => x.Timestamp).Take(nbOfCandles)
+                : this.historicalCandles.Where(x => x.Timestamp <= this.startDate).OrderByDescending(x => x.Timestamp).Take(nbOfCandles);
 
             return result.OrderBy(x => x.Timestamp);
         }
@@ -95,11 +127,66 @@
 
             var rateValue = currentCandle.FullRange * (decimal)this.rateGenerator.NextDouble() + currentCandle.Low;
 
-            var minuteFraction = (double)(nbOfCalls % ticksInPeriod) / ticksInPeriod;
+            var minuteFraction = (double)(this.nbOfCalls % this.ticksInPeriod) / this.ticksInPeriod;
 
             this.nbOfCalls++;
 
-            return new Rate { Ask = rateValue, Bid = rateValue, Instrument = instrument, Time = currentCandle.Timestamp.AddMinutes(periodInMinutes * minuteFraction) };
+            this.CurrentRate = new Rate
+            {
+                Ask = rateValue,
+                Bid = rateValue,
+                Instrument = instrument,
+                Time = currentCandle.Timestamp.AddMinutes(this.periodInMinutes * minuteFraction)
+            };
+
+            if (this.currentTrade == null)
+            {
+                return this.CurrentRate;
+            }
+
+            if (this.currentTrade.Side == OrderSideBuy)
+            {
+                var newTrailingAmount = CurrentRate.Bid - this.currentTrade.TrailingStop * 0.0001m;
+                this.currentTrade.TrailingAmount = newTrailingAmount > this.currentTrade.TrailingAmount ? newTrailingAmount : this.currentTrade.TrailingAmount;
+            }
+            else
+            {
+                var newTrailingAmount = CurrentRate.Ask + this.currentTrade.TrailingStop * 0.0001m;
+                this.currentTrade.TrailingAmount = newTrailingAmount < this.currentTrade.TrailingAmount ? newTrailingAmount : this.currentTrade.TrailingAmount;
+            }
+
+            var gainLoss = 0m;
+            if (this.currentTrade.Side == OrderSideBuy)
+            {
+                if (CurrentRate.Bid < currentTrade.TrailingAmount)
+                {
+                    hasOrder = false;
+                    gainLoss = CurrentRate.Bid - currentTrade.Price;
+                    Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
+                    currentTrade = null;
+                    balancePips += gainLoss;
+                    Console.WriteLine("Balance = {0}", balancePips);
+                }
+            }
+            else
+            {
+                if (CurrentRate.Ask > currentTrade.TrailingAmount)
+                {
+                    hasOrder = false;
+                    gainLoss = -CurrentRate.Ask + currentTrade.Price;
+                    Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
+                    currentTrade = null;
+                    balancePips += gainLoss;
+                    Console.WriteLine("Balance = {0}", balancePips);
+                }
+            }
+
+            return CurrentRate;
+        }
+
+        public override bool HasOpenOrder(int accountId)
+        {
+            return this.hasOrder;
         }
 
         public override bool IsInstrumentHalted(string instrument)
@@ -109,6 +196,22 @@
 
         public override void PlaceOrder(Order order)
         {
+            this.hasOrder = true;
+            var price = order.Side == OrderSideBuy ? CurrentRate.Ask : CurrentRate.Bid;
+            var trailingSize = order.TrailingStop * 0.0001m;
+            var trailingAmount = order.Side == OrderSideBuy ? price - trailingSize : price + trailingSize;
+            this.currentTrade = new Trade { Side = order.Side, TrailingAmount = trailingAmount, Price = price, TrailingStop = order.TrailingStop, StopLoss = order.StopLoss};
+            Console.WriteLine("Order placed ...");
+        }
+
+        public override bool HasOpenTrade(int accountId)
+        {
+            return hasOrder;
+        }
+
+        public void Reset()
+        {
+            this.nbOfCalls = 0;
         }
 
         public override void UpdateTrade(Trade updatedTrade)

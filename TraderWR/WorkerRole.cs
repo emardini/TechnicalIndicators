@@ -1,10 +1,7 @@
 namespace TraderWR
 {
-    using System;
     using System.Cobra;
-    using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
     using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
@@ -61,24 +58,24 @@ namespace TraderWR
                 "https://api-fxpractice.oanda.com/labs/v1/",
                 "xxx");
 
-            var candles = new List<Candle>();
-            try
-            {
-                candles = adapter.GetLastCandles("EUR_USD", 10, 150).ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-
             this.kernel = new StandardKernel();
             this.kernel.Bind<Cobra>()
-                .ToConstant(new Cobra(new Adx(14), candles, new Ema(12), new Ema(12), new Sma(72), new Sma(72), new SimpleDateProvider(), "EUR_USD", 10, adapter, adapter, 5027596))
+                .ToConstant(new Cobra(new Adx(14),
+                    new Ema(12),
+                    new Ema(12),
+                    new Sma(72),
+                    new Sma(72),
+                    new SimpleDateProvider(),
+                    "EUR_USD",
+                    10,
+                    adapter,
+                    adapter,
+                    5027596))
                 .InSingletonScope();
 
             this.kernel.Bind<IRateProvider>()
-              .ToConstant(adapter)
-              .InSingletonScope();
+                .ToConstant(adapter)
+                .InSingletonScope();
 
             return this.kernel;
         }
@@ -125,8 +122,8 @@ namespace TraderWR
             var jobRate = JobBuilder.Create<CheckRatesJob>().Build();
 
             var ratesTrigger = TriggerBuilder.Create()
-                .StartNow() 
-                .WithDescription("Rates")                
+                .StartNow()
+                .WithDescription("Rates")
                 .WithSimpleSchedule(x => x
                     .WithIntervalInSeconds(15)
                     .RepeatForever())

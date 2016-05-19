@@ -22,7 +22,7 @@ namespace TechnicalIndicators
 
         public decimal TrailingAmount { get; set; }
 
-        public int TrailingStop { get; set; }
+        public decimal TrailingStop { get; set; }
 
         public int Units { get; set; }
 

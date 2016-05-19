@@ -25,7 +25,7 @@
 
         private const string OrderTypeMarket = "market";
 
-        private const int Slippage = 5;
+        private const int Slippage = 3;
 
         #endregion
 
@@ -56,7 +56,6 @@
         #region Constructors and Destructors
 
         public Cobra(Adx adx,
-            //IEnumerable<Candle> initialCandles,
             Ema fastEmaHigh,
             Ema fastEmaLow,
             Sma slowSmaHigh,
@@ -73,10 +72,6 @@
             {
                 throw new ArgumentNullException("adx");
             }
-            //if (initialCandles == null)
-            //{
-            //    throw new ArgumentNullException("initialCandles");
-            //}
             if (fastEmaHigh == null)
             {
                 throw new ArgumentNullException("fastEmaHigh");
@@ -258,7 +253,7 @@
                 return false;
             }
 
-            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault();
+            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault() * 100m;
 
             return currentAdxValue > previousAdxValue;
         }
@@ -293,7 +288,7 @@
             this.CurrentRate = newRate;
 
             var nbOfRequiredCandles = 1;
-            var lastCandle = this.candles.OrderByDescending(x=> x.Timestamp).LastOrDefault();
+            var lastCandle = this.candles.OrderByDescending(x=> x.Timestamp).FirstOrDefault();
             if (lastCandle != null)
             {
                 nbOfRequiredCandles = (this.CurrentRate.Time - lastCandle.Timestamp).Minutes / this.PeriodInMinutes;
@@ -331,20 +326,18 @@
                 return;
             }
 
-            if (this.tradingAdapter.HasOpenOrder(this.AccountId))
-            {
-                return;
-            }
-
             if (this.tradingAdapter.HasOpenTrade(this.AccountId))
             {
                 var currentTrade = this.tradingAdapter.GetOpenTrade(this.AccountId);
+                //Not sure if doing this or just keep the trailing stop
                 if (this.ShouldCloseTrade(currentTrade))
                 {
+                    Console.WriteLine("Closing trade");
                     this.tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
                 }
                 else if (this.ShouldModifyTrade(currentTrade))
                 {
+                    Console.WriteLine("Break even");
                     var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0 };
                     this.tradingAdapter.UpdateTrade(updatedTrade);
                     return;
@@ -353,6 +346,11 @@
                 {
                     return;
                 }
+            }
+
+            if (this.tradingAdapter.HasOpenOrder(this.AccountId))
+            {
+                return;
             }
 
             if (this.CanGoLong(this.CurrentRate))
@@ -403,7 +401,7 @@
         {
             switch (instrument)
             {
-                case "EURUSD":
+                case "EUR_USD":
                     return new Threshold { Body = 0.1m, Delta = 0.0003m };
                 default:
                     return new Threshold { Body = 0.1m, Delta = 0.0001m };
@@ -514,7 +512,7 @@
                 return false;
             }
 
-            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault();
+            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault() * 100m;
 
             return currentAdxValue > previousAdxValue;
         }
@@ -563,9 +561,9 @@
             switch (currentTrade.Side)
             {
                 case OrderSideBuy:
-                    return currentTrade.TrailingAmount >= currentTrade.Price + spread + Slippage;
+                    return currentTrade.TrailingAmount >= currentTrade.Price + spread + Slippage * DolarsByPip;
                 default:
-                    return currentTrade.TrailingAmount <= currentTrade.Price - spread - Slippage;
+                    return currentTrade.TrailingAmount <= currentTrade.Price - spread - Slippage * DolarsByPip;
             }
         }
 

@@ -5,7 +5,7 @@
 	*	~~Make check rates call get last candle~~
 	*	~~Prevent adding repeated candles~~
 	*	~~Complete missing candles~~
-*	Compare adx calculation against other systems
+*	Compare adx calculation against other systems: in progress, seems good with visual inspection
 *	Add retries
 *	Health monitoring and alerts
 *	Expose configuration
@@ -14,7 +14,7 @@
 *	Limit amount of data to be kept 
 *	Backtest
 	*	Prebuilt data
-	*	Historical data
+	*	Historical data: in progress, seems good, checking 05/17/2016 9:30PM, it should be a good long position with profit
 	*	Uptrend
 	*	Downtrend
 	*	No trend

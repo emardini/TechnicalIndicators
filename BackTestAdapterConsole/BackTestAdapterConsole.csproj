@@ -58,6 +58,10 @@
       <Project>{b5de66d1-bc10-4f21-b35d-d59532d08390}</Project>
       <Name>BrokerAdapter.BackTest</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BrokerAdapter.Oanda\BrokerAdapter.Oanda.csproj">
+      <Project>{3b8f638c-bbfb-4831-8530-fa309cecd770}</Project>
+      <Name>BrokerAdapter.Oanda</Name>
+    </ProjectReference>
     <ProjectReference Include="..\System.Cobra\System.Cobra.csproj">
       <Project>{838bd1c0-5bf6-42cf-9361-9669dfb4c4b0}</Project>
       <Name>System.Cobra</Name>
