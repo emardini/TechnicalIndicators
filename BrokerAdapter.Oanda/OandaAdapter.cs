@@ -172,7 +172,8 @@
                     { "units", order.Units.ToString(CultureInfo.InvariantCulture) },
                     { "side", order.Side },
                     { "type", order.OrderType },
-                    { "stopLoss", order.StopLoss.ToString(CultureInfo.InvariantCulture) }
+                    { "stopLoss", order.StopLoss.ToString(CultureInfo.InvariantCulture) },
+                    { "trailingStop", string.Format("{0:0.0}", order.TrailingStop) }
                 }).Result;
         }
 

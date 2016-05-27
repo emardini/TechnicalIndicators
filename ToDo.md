@@ -1,5 +1,6 @@
 *	~~Check halted state~~
-*	Logging (important events, traces)
+*   Change logic to prioritize close/modify order in case of unstable conditions
+*	Health monitoring, alerts and logging (important events, traces)
 *	Add rates, candles, orders and results in permanent store for backtesting, compalints and debugging
 *	~~Verify rates and candles completion~~
 	*	~~Make check rates call get last candle~~
@@ -7,7 +8,6 @@
 	*	~~Complete missing candles~~
 *	Compare adx calculation against other systems: in progress, seems good with visual inspection
 *	Add retries
-*	Health monitoring and alerts
 *	Expose configuration
 	*	Enable/disable auto transactions
 *	Implement kelly criterion
@@ -28,3 +28,5 @@
 *	~~Validates the amount of data required to calculate indicators, including any holes in data~~
 *	Define rule to restrict transactions based on the size of stop loss
 *	~~Implement function to calculate the period based on the values passed by parameter~~
+*   Check candles lagging behind in live account
+*   Handle error on leverage and insuficient funds, maybe limiting the position size or stop los size (minimum size)

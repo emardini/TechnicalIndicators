@@ -1,6 +1,7 @@
 ﻿namespace System.Cobra
 {
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
 
     using TechnicalIndicators;
@@ -275,6 +276,8 @@
                 return;
             }
 
+            //TODO: Change logic to prioritize close/modify order in case of unstable conditions
+
             if (!this.isBackTest)
             {
                 var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time;
@@ -294,6 +297,7 @@
                 nbOfRequiredCandles = (this.CurrentRate.Time - lastCandle.Timestamp).Minutes / this.PeriodInMinutes;
             }
 
+            var nbOfcandles = this.candles.Count();
             if (nbOfRequiredCandles > 0)
             {
                 var requiredCandles = this.rateProvider.GetLastCandles(this.Instrument,
@@ -319,6 +323,12 @@
                 {
                     return;
                 }
+            }
+
+            if (nbOfcandles + nbOfRequiredCandles != this.candles.Count())
+            {
+                Debug.WriteLine("System lagging behind in candles");
+                //return;
             }
 
             if (!this.ValidateIndicatorsState())
@@ -451,7 +461,7 @@
             }
 
             var highLimit = this.fastEmaHigh.Values.LastOrDefault();
-            return Math.Ceiling((highLimit - this.CurrentRate.Bid) / DolarsByPip);
+            return (highLimit - this.CurrentRate.Bid) / DolarsByPip;
         }
 
         private bool CanGoShort(Rate rate)

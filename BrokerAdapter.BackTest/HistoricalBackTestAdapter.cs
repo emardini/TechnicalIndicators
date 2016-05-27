@@ -92,7 +92,7 @@
             var gainLoss = 0m;
             if (this.currentTrade.Side == OrderSideBuy)
             {
-                var amountToCompare =CurrentRate.Bid;
+                var amountToCompare = this.CurrentRate.Bid;
                 gainLoss = (amountToCompare - this.currentTrade.Price) / DolarsByPip;
                 Console.WriteLine("Close Order =>Gain/Loss={0}", gainLoss);
                 this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
@@ -101,7 +101,7 @@
             }
             else
             {
-                var amountToCompare = CurrentRate.Ask;
+                var amountToCompare = this.CurrentRate.Ask;
                 gainLoss = (this.currentTrade.Price - amountToCompare) / DolarsByPip;
                 Console.WriteLine("Close order=>Gain/Loss={0}", gainLoss);
                 this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
