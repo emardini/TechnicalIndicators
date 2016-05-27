@@ -30,6 +30,8 @@
 
         public string Side { get; set; }
 
+        public DateTime Timestamp { get; set; }
+
         #endregion
     }
 }

@@ -288,7 +288,7 @@
             this.CurrentRate = newRate;
 
             var nbOfRequiredCandles = 1;
-            var lastCandle = this.candles.OrderByDescending(x=> x.Timestamp).FirstOrDefault();
+            var lastCandle = this.candles.OrderByDescending(x => x.Timestamp).FirstOrDefault();
             if (lastCandle != null)
             {
                 nbOfRequiredCandles = (this.CurrentRate.Time - lastCandle.Timestamp).Minutes / this.PeriodInMinutes;
@@ -355,13 +355,13 @@
 
             if (this.CanGoLong(this.CurrentRate))
             {
-                this.PlaceOrder(OrderSideBuy);
+                this.PlaceOrder(OrderSideBuy, this.CurrentRate);
                 return;
             }
 
             if (this.CanGoShort(this.CurrentRate))
             {
-                this.PlaceOrder(OrderSideSell);
+                this.PlaceOrder(OrderSideSell, this.CurrentRate);
             }
         }
 
@@ -447,11 +447,11 @@
             if (side == OrderSideBuy)
             {
                 var lowLimit = this.fastEmaLow.Values.LastOrDefault();
-                return (this.CurrentRate.Ask - lowLimit) * 10000m;
+                return Math.Ceiling((this.CurrentRate.Ask - lowLimit) / DolarsByPip);
             }
 
             var highLimit = this.fastEmaHigh.Values.LastOrDefault();
-            return (highLimit - this.CurrentRate.Bid) * 10000m;
+            return Math.Ceiling((highLimit - this.CurrentRate.Bid) / DolarsByPip);
         }
 
         private bool CanGoShort(Rate rate)
@@ -517,7 +517,7 @@
             return currentAdxValue > previousAdxValue;
         }
 
-        private void PlaceOrder(string side)
+        private void PlaceOrder(string side, Rate rate)
         {
             var stopLossDistance = this.CalculateStopLossDistance(side);
             var positionSizeInUnits = this.CalculatePositionSize(stopLossDistance);
@@ -529,7 +529,8 @@
                 Side = side,
                 OrderType = OrderTypeMarket,
                 TrailingStop = stopLossDistance,
-                AcountId = this.AccountId
+                AcountId = this.AccountId,
+                Timestamp = rate.Time
             });
         }
 
@@ -557,13 +558,18 @@
 
         private bool ShouldModifyTrade(Trade currentTrade)
         {
+            if (currentTrade.StopLoss > 0)
+            {
+                return false;
+            }
+
             decimal? spread = (this.CurrentRate.Ask - this.CurrentRate.Bid) / 2;
             switch (currentTrade.Side)
             {
                 case OrderSideBuy:
-                    return currentTrade.TrailingAmount >= currentTrade.Price + spread + Slippage * DolarsByPip;
+                    return currentTrade.TrailingAmount >= currentTrade.Price + (spread + Slippage) * DolarsByPip;
                 default:
-                    return currentTrade.TrailingAmount <= currentTrade.Price - spread - Slippage * DolarsByPip;
+                    return currentTrade.TrailingAmount <= currentTrade.Price - (spread - Slippage) * DolarsByPip;
             }
         }
 

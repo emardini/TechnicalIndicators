@@ -10,11 +10,16 @@
 
     public class HistoricalBackTestAdapter : OandaAdapter
     {
+        #region Constants
+
+        private const decimal DolarsByPip = 0.0001m;
+
         private const string OrderSideBuy = "buy";
 
         private const string OrderSideSell = "sell";
 
-        private decimal balancePips;
+        #endregion
+
         #region Fields
 
         private readonly List<Candle> historicalCandles;
@@ -29,11 +34,13 @@
 
         private readonly int ticksInPeriod;
 
-        private bool hasOrder;
+        private Rate CurrentRate;
+
+        private decimal balancePips;
+
+        private Trade currentTrade;
 
         private int nbOfCalls;
-        private Trade currentTrade;
-        private Rate CurrentRate;
 
         #endregion
 
@@ -85,26 +92,22 @@
             var gainLoss = 0m;
             if (this.currentTrade.Side == OrderSideBuy)
             {
-                    gainLoss = CurrentRate.Bid - currentTrade.Price;
-                    Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
-                    currentTrade = null;
-                    balancePips += gainLoss;
-                    Console.WriteLine("Balance = {0}", balancePips);
+                var amountToCompare =CurrentRate.Bid;
+                gainLoss = (amountToCompare - this.currentTrade.Price) / DolarsByPip;
+                Console.WriteLine("Close Order =>Gain/Loss={0}", gainLoss);
+                this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
+                Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
+                this.currentTrade = null;
             }
             else
             {
-                    hasOrder = false;
-                    gainLoss = -CurrentRate.Ask + currentTrade.Price;
-                    Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
-                    currentTrade = null;
-                    balancePips += gainLoss;
-                    Console.WriteLine("Balance = {0}", balancePips);
+                var amountToCompare = CurrentRate.Ask;
+                gainLoss = (this.currentTrade.Price - amountToCompare) / DolarsByPip;
+                Console.WriteLine("Close order=>Gain/Loss={0}", gainLoss);
+                this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
+                Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
+                this.currentTrade = null;
             }
-        }
-
-        public override Trade GetOpenTrade(int accountId)
-        {
-            return this.currentTrade;
         }
 
         public override Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
@@ -119,6 +122,11 @@
                 : this.historicalCandles.Where(x => x.Timestamp <= this.startDate).OrderByDescending(x => x.Timestamp).Take(nbOfCandles);
 
             return result.OrderBy(x => x.Timestamp);
+        }
+
+        public override Trade GetOpenTrade(int accountId)
+        {
+            return this.currentTrade;
         }
 
         public override Rate GetRate(string instrument)
@@ -144,49 +152,76 @@
                 return this.CurrentRate;
             }
 
+            var amountToCompare = 0m;
             if (this.currentTrade.Side == OrderSideBuy)
             {
-                var newTrailingAmount = CurrentRate.Bid - this.currentTrade.TrailingStop * 0.0001m;
-                this.currentTrade.TrailingAmount = newTrailingAmount > this.currentTrade.TrailingAmount ? newTrailingAmount : this.currentTrade.TrailingAmount;
+                if (this.currentTrade.TrailingStop > 0)
+                {
+                    var newTrailingAmount = this.CurrentRate.Bid - this.currentTrade.TrailingStop * 0.0001m;
+
+                    this.currentTrade.TrailingAmount = newTrailingAmount >= this.currentTrade.TrailingAmount
+                        ? newTrailingAmount
+                        : this.currentTrade.TrailingAmount;
+                    amountToCompare = this.currentTrade.TrailingAmount;
+                }
+                else
+                {
+                    this.currentTrade.TrailingAmount = 0;
+                    amountToCompare = this.currentTrade.StopLoss;
+                }
             }
             else
             {
-                var newTrailingAmount = CurrentRate.Ask + this.currentTrade.TrailingStop * 0.0001m;
-                this.currentTrade.TrailingAmount = newTrailingAmount < this.currentTrade.TrailingAmount ? newTrailingAmount : this.currentTrade.TrailingAmount;
+                if (this.currentTrade.TrailingStop > 0)
+                {
+                    var newTrailingAmount = this.CurrentRate.Ask + this.currentTrade.TrailingStop * 0.0001m;
+                    this.currentTrade.TrailingAmount = newTrailingAmount < this.currentTrade.TrailingAmount
+                        ? newTrailingAmount
+                        : this.currentTrade.TrailingAmount;
+                    amountToCompare = this.currentTrade.TrailingAmount;
+                }
+                else
+                {
+                    this.currentTrade.TrailingAmount = 0;
+                    amountToCompare = this.currentTrade.StopLoss;
+                }
             }
 
             var gainLoss = 0m;
             if (this.currentTrade.Side == OrderSideBuy)
             {
-                if (CurrentRate.Bid < currentTrade.TrailingAmount)
+                if (this.CurrentRate.Bid < amountToCompare)
                 {
-                    hasOrder = false;
-                    gainLoss = CurrentRate.Bid - currentTrade.Price;
+                    gainLoss = (this.currentTrade.Price - amountToCompare) / DolarsByPip;
                     Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
-                    currentTrade = null;
-                    balancePips += gainLoss;
-                    Console.WriteLine("Balance = {0}", balancePips);
+                    this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
+                    Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
+                    this.currentTrade = null;
                 }
             }
             else
             {
-                if (CurrentRate.Ask > currentTrade.TrailingAmount)
+                if (this.CurrentRate.Ask > amountToCompare)
                 {
-                    hasOrder = false;
-                    gainLoss = -CurrentRate.Ask + currentTrade.Price;
+                    gainLoss = (amountToCompare - this.currentTrade.Price) / DolarsByPip;
                     Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
-                    currentTrade = null;
-                    balancePips += gainLoss;
-                    Console.WriteLine("Balance = {0}", balancePips);
+                    this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
+                    Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
+                    this.currentTrade = null;
                 }
             }
 
-            return CurrentRate;
+            return this.CurrentRate;
         }
 
         public override bool HasOpenOrder(int accountId)
         {
-            return this.hasOrder;
+            return this.currentTrade != null;
+        }
+
+        public override bool HasOpenTrade(int accountId)
+        {
+            return this.HasOpenOrder(accountId);
         }
 
         public override bool IsInstrumentHalted(string instrument)
@@ -196,17 +231,20 @@
 
         public override void PlaceOrder(Order order)
         {
-            this.hasOrder = true;
-            var price = order.Side == OrderSideBuy ? CurrentRate.Ask : CurrentRate.Bid;
+            var price = order.Side == OrderSideBuy ? this.CurrentRate.Ask : this.CurrentRate.Bid;
             var trailingSize = order.TrailingStop * 0.0001m;
             var trailingAmount = order.Side == OrderSideBuy ? price - trailingSize : price + trailingSize;
-            this.currentTrade = new Trade { Side = order.Side, TrailingAmount = trailingAmount, Price = price, TrailingStop = order.TrailingStop, StopLoss = order.StopLoss};
+            this.currentTrade = new Trade
+            {
+                Side = order.Side,
+                TrailingAmount = trailingAmount,
+                Price = price,
+                TrailingStop = order.TrailingStop,
+                StopLoss = order.StopLoss,
+                Time = order.Timestamp,
+                Units = order.Units
+            };
             Console.WriteLine("Order placed ...");
-        }
-
-        public override bool HasOpenTrade(int accountId)
-        {
-            return hasOrder;
         }
 
         public void Reset()
@@ -216,6 +254,9 @@
 
         public override void UpdateTrade(Trade updatedTrade)
         {
+            this.currentTrade.StopLoss = updatedTrade.StopLoss;
+            this.currentTrade.TrailingAmount = updatedTrade.TrailingAmount;
+            this.currentTrade.TrailingStop = updatedTrade.TrailingStop;
         }
 
         #endregion
