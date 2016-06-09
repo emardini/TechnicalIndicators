@@ -24,9 +24,11 @@
 *	~~Validate the candle timestamp matches the rate date~~
 *	Define if restrictions apply by time of the day
 *	Make list of all posible risks, unexpected or undesirable events
+*   https://www.fxcm.com/legal/trading-execution-risks/
 *	What happen if the system cannot get rates?
 *	~~Validates the amount of data required to calculate indicators, including any holes in data~~
 *	Define rule to restrict transactions based on the size of stop loss
 *	~~Implement function to calculate the period based on the values passed by parameter~~
 *   Check candles lagging behind in live account
 *   Handle error on leverage and insuficient funds, maybe limiting the position size or stop los size (minimum size)
+*   Verify that the candles are not lagging behind as we do with rates

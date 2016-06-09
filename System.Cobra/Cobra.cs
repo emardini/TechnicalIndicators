@@ -26,7 +26,9 @@
 
         private const string OrderTypeMarket = "market";
 
-        private const int Slippage = 3;
+        private const int SlippagePips = 3;
+
+        private const int MarginalGainPips = 3;
 
         #endregion
 
@@ -445,11 +447,24 @@
         private int CalculatePositionSize(decimal stopLoss)
         {
             var accountInformation = this.tradingAdapter.GetAccountInformation(this.AccountId);
-            var maxRiskAmount = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault() * BaseRiskPercentage;
+            var balance = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault();
+            var maxRiskAmount = balance * BaseRiskPercentage;
 
             var positionSize = (maxRiskAmount / stopLoss) / DolarsByPip;
-            //TODO: Use account balance and Kelly Criterior to calculate position size
-            return (int)positionSize;
+
+            var accountMarginRate = accountInformation.MarginRate.SafeParseDecimal().GetValueOrDefault();
+            var accountLeverage = 1m;
+            if (accountMarginRate > 0)
+            {
+                accountLeverage = 1m / accountMarginRate;
+            }
+
+            var availablePositionSize =  Math.Min(positionSize, balance*accountLeverage);
+
+            //TODO: Use Kelly Criterior to calculate position size
+            //TODO: Implement criterias for minimum stop loss condition
+
+            return (int)availablePositionSize;
         }
 
         private decimal CalculateStopLossDistance(string side)
@@ -461,7 +476,7 @@
             }
 
             var highLimit = this.fastEmaHigh.Values.LastOrDefault();
-            return (highLimit - this.CurrentRate.Bid) / DolarsByPip;
+            return Math.Abs((highLimit - this.CurrentRate.Bid) / DolarsByPip);
         }
 
         private bool CanGoShort(Rate rate)
@@ -546,6 +561,11 @@
 
         private bool ShouldCloseTrade(Trade currentTrade)
         {
+            if (currentTrade.TrailingStop > 0)
+            {
+                return false;
+            }
+
             var currentCandle = this.candles.LastOrDefault();
 
             switch (currentTrade.Side)
@@ -573,13 +593,14 @@
                 return false;
             }
 
-            decimal? spread = (this.CurrentRate.Ask - this.CurrentRate.Bid) / 2;
+            decimal? spreadPips = (this.CurrentRate.Ask - this.CurrentRate.Bid) / (2 * DolarsByPip);
+            var cushionDeltaPrice = (spreadPips + SlippagePips + MarginalGainPips) * DolarsByPip;
             switch (currentTrade.Side)
             {
                 case OrderSideBuy:
-                    return currentTrade.TrailingAmount >= currentTrade.Price + (spread + Slippage) * DolarsByPip;
+                    return currentTrade.TrailingAmount >= currentTrade.Price + cushionDeltaPrice;
                 default:
-                    return currentTrade.TrailingAmount <= currentTrade.Price - (spread - Slippage) * DolarsByPip;
+                    return currentTrade.TrailingAmount <= currentTrade.Price - cushionDeltaPrice;
             }
         }
 

@@ -55,7 +55,7 @@
             var response =
                 this.proxy.GetAccountDetailsAsync(accountId).Result;
 
-            return new AccountInformation { AccountId = response.accountId, AccountCurrency = response.accountCurrency, Balance = response.balance };
+            return new AccountInformation { AccountId = response.accountId, AccountCurrency = response.accountCurrency, Balance = response.balance, MarginRate = response.marginRate};
         }
 
         public virtual Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
