@@ -153,7 +153,7 @@
 
         #region Public Methods and Operators
 
-        public static bool ConfirmPreviousCandleForAsk(Candle previousCandle, Candle currentCandle)
+        public bool ConfirmPreviousCandleForAsk(Candle previousCandle, Candle currentCandle)
         {
             if (previousCandle == null)
             {
@@ -234,20 +234,32 @@
                 return false;
             }
 
+            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
+            {
+                return false;
+            }
+
             var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
+
+            if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+            {
+                return false;
+            }
+
             if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
             {
                 previousCandle = this.candles.TakeLast(3).Skip(2)
                     .FirstOrDefault();
+
+                if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+                {
+                    return false;
+                }
+
                 if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
                 {
                     return false;
                 }
-            }
-
-            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
-            {
-                return false;
             }
 
             var currentAdxValue = this.adx.Values.LastOrDefault() * 100m;
@@ -282,8 +294,8 @@
 
             if (!this.isBackTest)
             {
-                var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time;
-                if (systemTimeDiff.Minutes >= MaxRateStaleTime)
+                var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time.ToUniversalTime();
+                if (systemTimeDiff.TotalMinutes >= MaxRateStaleTime)
                 {
                     //Meaning rate reading is stale
                     return;
@@ -296,7 +308,10 @@
             var lastCandle = this.candles.OrderByDescending(x => x.Timestamp).FirstOrDefault();
             if (lastCandle != null)
             {
-                nbOfRequiredCandles = (this.CurrentRate.Time - lastCandle.Timestamp).Minutes / this.PeriodInMinutes;
+                var timeDiffMinutesRaw = Math.Abs((this.CurrentRate.Time - lastCandle.Timestamp).TotalMinutes);
+                var timeDiffMinutes = timeDiffMinutesRaw > int.MaxValue ? int.MaxValue : (int)timeDiffMinutesRaw;
+                nbOfRequiredCandles = (timeDiffMinutes - this.PeriodInMinutes) / this.PeriodInMinutes;
+                nbOfRequiredCandles = nbOfRequiredCandles < 0 ? 0 : nbOfRequiredCandles;
             }
 
             var nbOfcandles = this.candles.Count();
@@ -515,20 +530,31 @@
                 return false;
             }
 
+            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
+            {
+                return false;
+            }
+
             var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
+
+            if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+            {
+                return false;
+            }
+
             if (!ConfirmPreviousCandleForBid(previousCandle, currentCandle))
             {
                 previousCandle = this.candles.TakeLast(3).Skip(2)
                     .FirstOrDefault();
+                if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+                {
+                    return false;
+                }
+
                 if (!ConfirmPreviousCandleForBid(previousCandle, currentCandle))
                 {
                     return false;
                 }
-            }
-
-            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
-            {
-                return false;
             }
 
             var currentAdxValue = this.adx.Values.LastOrDefault() * 100;

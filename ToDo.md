@@ -32,3 +32,4 @@
 *   Check candles lagging behind in live account
 *   Handle error on leverage and insuficient funds, maybe limiting the position size or stop los size (minimum size)
 *   Verify that the candles are not lagging behind as we do with rates
+*   Check workflow to verify is it is needed to close a position in case of anomaly
