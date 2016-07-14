@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{838BD1C0-5BF6-42CF-9361-9669DFB4C4B0}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{166B6F48-04C8-4E25-AC64-E452F0EA441B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>System.Cobra</RootNamespace>
-    <AssemblyName>System.Cobra</AssemblyName>
+    <RootNamespace>TraderJob</RootNamespace>
+    <AssemblyName>TraderJob</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -32,13 +32,25 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Azure.WebJobs">
+      <HintPath>..\packages\Microsoft.Azure.WebJobs.Core.1.1.2\lib\net45\Microsoft.Azure.WebJobs.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Azure.WebJobs.Extensions">
+      <HintPath>..\packages\Microsoft.Azure.WebJobs.Extensions.1.0.1\lib\net45\Microsoft.Azure.WebJobs.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Azure.WebJobs.Host">
+      <HintPath>..\packages\Microsoft.Azure.WebJobs.1.1.2\lib\net45\Microsoft.Azure.WebJobs.Host.dll</HintPath>
+    </Reference>
+    <Reference Include="NCrontab">
+      <HintPath>..\packages\ncrontab.2.0.0\lib\net20\NCrontab.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject">
+      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,21 +58,41 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.WindowsAzure.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.2.0.3\lib\net40\Microsoft.WindowsAzure.Configuration.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cobra.cs" />
+    <Compile Include="MyActivator.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\ForexTradingHost - Web Deploy.pubxml" />
+    <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BrokerAdapter.Oanda\BrokerAdapter.Oanda.csproj">
+      <Project>{3b8f638c-bbfb-4831-8530-fa309cecd770}</Project>
+      <Name>BrokerAdapter.Oanda</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\System.Cobra\System.Cobra.csproj">
+      <Project>{838bd1c0-5bf6-42cf-9361-9669dfb4c4b0}</Project>
+      <Name>System.Cobra</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TechnicalIndicators\TechnicalIndicators.csproj">
-      <Project>{5F9157FD-46D7-43E5-A2FB-B9D6B30AB0D7}</Project>
+      <Project>{5f9157fd-46d7-43e5-a2fb-b9d6b30ab0d7}</Project>
       <Name>TechnicalIndicators</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.Web.WebJobs.Publish.1.0.12\tools\webjobs.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.1.0.12\tools\webjobs.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

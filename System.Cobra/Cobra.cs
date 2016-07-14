@@ -4,6 +4,8 @@
     using System.Diagnostics;
     using System.Linq;
 
+    using Newtonsoft.Json;
+
     using TechnicalIndicators;
 
     public class Cobra
@@ -200,11 +202,6 @@
         //Return structure containig reason why cannot go long to improve testability
         public bool CanGoLong(Rate rate)
         {
-            if (this.IsBannedDay())
-            {
-                return false;
-            }
-
             var slowSmaHighValue = this.slowSmaHigh.Values.LastOrDefault();
             var fastEmaHighValue = this.fastEmaHigh.Values.LastOrDefault();
 
@@ -262,15 +259,7 @@
                 }
             }
 
-            var currentAdxValue = this.adx.Values.LastOrDefault() * 100m;
-            if (currentAdxValue < AdxTrendLevel)
-            {
-                return false;
-            }
-
-            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault() * 100m;
-
-            return currentAdxValue > previousAdxValue;
+            return true;
         }
 
         /// <summary>
@@ -279,17 +268,22 @@
         /// </summary>
         public void CheckRate()
         {
+            Trace.CorrelationManager.ActivityId = Guid.NewGuid();
+
             if (this.rateProvider.IsInstrumentHalted(this.Instrument))
             {
+                Trace.TraceInformation("Instrument {0} halted", this.Instrument);
                 return;
             }
 
             var newRate = this.rateProvider.GetRate(this.Instrument);
             if (this.CurrentRate != null && newRate.Time <= this.CurrentRate.Time)
             {
+                Trace.TraceInformation("No new rates");
                 return;
             }
 
+            Trace.TraceInformation("New rate : {0}", JsonConvert.SerializeObject(newRate));
             //TODO: Change logic to prioritize close/modify order in case of unstable conditions
 
             if (!this.isBackTest)
@@ -323,33 +317,30 @@
                     this.CurrentRate.Time).ToList();
                 if (requiredCandles.Count() < nbOfRequiredCandles)
                 {
+                    Trace.TraceInformation("Not enough candles to check trading");
                     return;
                 }
-                var hasError = false;
+
                 try
                 {
                     this.AddCandles(requiredCandles);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //Log
-                    hasError = true;
-                }
-
-                if (hasError)
-                {
+                    Trace.TraceError(ex.ToString());
                     return;
                 }
             }
 
             if (nbOfcandles + nbOfRequiredCandles != this.candles.Count())
             {
-                Debug.WriteLine("System lagging behind in candles");
-                //return;
+                Trace.TraceInformation("System lagging behind in candles");
+                return;
             }
 
             if (!this.ValidateIndicatorsState())
             {
+                Trace.TraceInformation("Incomplete indicator values");
                 return;
             }
 
@@ -359,25 +350,48 @@
                 //Not sure if doing this or just keep the trailing stop
                 if (this.ShouldCloseTrade(currentTrade))
                 {
-                    Console.WriteLine("Closing trade");
+                    Trace.TraceInformation("Closing trade");
                     this.tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
                 }
                 else if (this.ShouldModifyTrade(currentTrade))
                 {
-                    Console.WriteLine("Break even");
+                    Trace.TraceInformation("Break even");
                     var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0 };
                     this.tradingAdapter.UpdateTrade(updatedTrade);
                     return;
                 }
                 else
                 {
+                    Trace.TraceInformation("Open trade");
                     return;
                 }
             }
 
             if (this.tradingAdapter.HasOpenOrder(this.AccountId))
             {
+                Trace.TraceInformation("Open order");
                 return;
+            }
+
+            if (this.IsBannedDay())
+            {
+                Trace.TraceInformation("Non trading day");
+                return;
+            }
+
+            var currentAdxValue = this.adx.Values.LastOrDefault() * 100;
+            if (currentAdxValue < AdxTrendLevel)
+            {
+                Trace.TraceInformation("ADX ({0}) below threshold ({1})", currentAdxValue, AdxTrendLevel);
+                return;
+            }
+
+            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault() * 100m;
+
+            if (currentAdxValue <= previousAdxValue)
+            {
+                Trace.TraceInformation("ADX not increasing {0} => {1}", previousAdxValue, currentAdxValue);
+                return;  
             }
 
             if (this.CanGoLong(this.CurrentRate))
@@ -496,11 +510,6 @@
 
         private bool CanGoShort(Rate rate)
         {
-            if (this.IsBannedDay())
-            {
-                return false;
-            }
-
             var slowSmaLowValue = this.slowSmaLow.Values.LastOrDefault();
             var fastEmaLowValue = this.fastEmaLow.Values.LastOrDefault();
 
@@ -557,15 +566,7 @@
                 }
             }
 
-            var currentAdxValue = this.adx.Values.LastOrDefault() * 100;
-            if (currentAdxValue < AdxTrendLevel)
-            {
-                return false;
-            }
-
-            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault() * 100m;
-
-            return currentAdxValue > previousAdxValue;
+            return true;
         }
 
         private void PlaceOrder(string side, Rate rate)
@@ -573,7 +574,8 @@
             var stopLossDistance = this.CalculateStopLossDistance(side);
             var positionSizeInUnits = this.CalculatePositionSize(stopLossDistance);
             //TODO: Decide if to user lower-upper bounds or just market order and assume the slippage
-            this.tradingAdapter.PlaceOrder(new Order
+
+            var newOrder = new Order
             {
                 Instrument = this.Instrument,
                 Units = positionSizeInUnits,
@@ -582,7 +584,10 @@
                 TrailingStop = stopLossDistance,
                 AcountId = this.AccountId,
                 Timestamp = rate.Time
-            });
+            };
+            this.tradingAdapter.PlaceOrder(newOrder);
+
+            Trace.TraceInformation("Order placed :{0}", JsonConvert.SerializeObject(newOrder));
         }
 
         private bool ShouldCloseTrade(Trade currentTrade)
