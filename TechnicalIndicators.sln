@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderJob", "TraderJob\TraderJob.csproj", "{166B6F48-04C8-4E25-AC64-E452F0EA441B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeepAlive", "KeepAlive\KeepAlive.csproj", "{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{166B6F48-04C8-4E25-AC64-E452F0EA441B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{166B6F48-04C8-4E25-AC64-E452F0EA441B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{166B6F48-04C8-4E25-AC64-E452F0EA441B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

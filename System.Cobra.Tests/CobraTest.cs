@@ -164,41 +164,41 @@
             target.CanGoLong(new Rate { Ask = 3, Instrument = "EURUSD" }).Should().BeFalse();
         }
 
-        [Test]
-        public void ConfirmPreviousCandleForAsk_IfCurrentCandleCloseHigherThanPreviousCandleClose_ReturnsTrue()
-        {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 16, DateTime.UtcNow)).Should().BeTrue();
-        }
+        //[Test]
+        //public void ConfirmPreviousCandleForAsk_IfCurrentCandleCloseHigherThanPreviousCandleClose_ReturnsTrue()
+        //{
+        //    Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 16, DateTime.UtcNow)).Should().BeTrue();
+        //}
 
-        [Test]
-        public void ConfirmPreviousCandleForAsk_IfCurrentCandleIsNull_ReturnsFalse()
-        {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(), null).Should().BeFalse();
-        }
+        //[Test]
+        //public void ConfirmPreviousCandleForAsk_IfCurrentCandleIsNull_ReturnsFalse()
+        //{
+        //    Cobra.ConfirmPreviousCandleForAsk(new Candle(), null).Should().BeFalse();
+        //}
 
-        [Test]
-        public void ConfirmPreviousCandleForAsk_IfPreviousCandleCloseIsEqualThanCurrentCandleClose_ReturnsFalse()
-        {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 15, DateTime.UtcNow)).Should().BeFalse();
-        }
+        //[Test]
+        //public void ConfirmPreviousCandleForAsk_IfPreviousCandleCloseIsEqualThanCurrentCandleClose_ReturnsFalse()
+        //{
+        //    Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 15, DateTime.UtcNow)).Should().BeFalse();
+        //}
 
-        [Test]
-        public void ConfirmPreviousCandleForAsk_IfPreviousCandleCloseIsHigherThanCurrentCandleClose_ReturnsFalse()
-        {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 14, DateTime.UtcNow)).Should().BeFalse();
-        }
+        //[Test]
+        //public void ConfirmPreviousCandleForAsk_IfPreviousCandleCloseIsHigherThanCurrentCandleClose_ReturnsFalse()
+        //{
+        //    Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 15, DateTime.UtcNow), new Candle(10, 20, 5, 14, DateTime.UtcNow)).Should().BeFalse();
+        //}
 
-        [Test]
-        public void ConfirmPreviousCandleForAsk_IfPreviousCandleIsNotUp_ReturnsFalse()
-        {
-            Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 8, DateTime.UtcNow), new Candle()).Should().BeFalse();
-        }
+        //[Test]
+        //public void ConfirmPreviousCandleForAsk_IfPreviousCandleIsNotUp_ReturnsFalse()
+        //{
+        //    Cobra.ConfirmPreviousCandleForAsk(new Candle(10, 20, 5, 8, DateTime.UtcNow), new Candle()).Should().BeFalse();
+        //}
 
-        [Test]
-        public void ConfirmPreviousCandleForAsk_IfPreviousCandleIsNull_ReturnsFalse()
-        {
-            Cobra.ConfirmPreviousCandleForAsk(null, new Candle()).Should().BeFalse();
-        }
+        //[Test]
+        //public void ConfirmPreviousCandleForAsk_IfPreviousCandleIsNull_ReturnsFalse()
+        //{
+        //    Cobra.ConfirmPreviousCandleForAsk(null, new Candle()).Should().BeFalse();
+        //}
 
         [Test]
         public void IsBannedDay_IfItIsBannedDay_ReturnsTrue()
