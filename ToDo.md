@@ -1,7 +1,7 @@
 *	~~Check halted state~~
 *   Change logic to prioritize close/modify order in case of unstable conditions
 *	Health monitoring, alerts and logging (important events, traces)
-*	Add rates, candles, orders and results in permanent store for backtesting, compalints and debugging
+*	Add rates, candles, orders and results in permanent store for backtesting, complaints and debugging
 *	~~Verify rates and candles completion~~
 	*	~~Make check rates call get last candle~~
 	*	~~Prevent adding repeated candles~~
@@ -10,6 +10,12 @@
 *	Add retries
 *	Expose configuration
 	*	Enable/disable auto transactions
+	*   Set history to calculate adx direction in app config
+	*   Azure credentials
+	*   Oanda Credentials
+	*   Rate period
+	*   Currency pair
+	*   Other configurations in the trading class
 *	Implement kelly criterion
 *	Limit amount of data to be kept 
 *	Backtest

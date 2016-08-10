@@ -386,7 +386,8 @@
                 return;
             }
 
-            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault() * 100m;
+            //TODO: Set history to calculate adx direction in app config
+            var previousAdxValue = this.adx.Values.TakeLast(5).Skip(1).FirstOrDefault() * 100m;
 
             if (currentAdxValue <= previousAdxValue)
             {
