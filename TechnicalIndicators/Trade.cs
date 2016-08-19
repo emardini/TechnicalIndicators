@@ -6,6 +6,16 @@ namespace TechnicalIndicators
     {
         #region Public Properties
 
+        public string QuoteCurrency
+        {
+            get { return this.Instrument.Safe().PadRight(7, ' ').Substring(4, 3); }
+        }
+
+        public string BaseCurrency
+        {
+            get { return this.Instrument.Safe().PadRight(7, ' ').Substring(0, 3); }
+        }
+
         public long Id { get; set; }
 
         public string Instrument { get; set; }

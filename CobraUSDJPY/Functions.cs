@@ -26,7 +26,7 @@
 
         [Singleton(Mode = SingletonMode.Listener)]
         #region Public Methods and Operators
-        public void CheckRatesJob([TimerTrigger("0 */1 * * * 1-4", RunOnStartup = true)] TimerInfo timer)
+        public void CheckRatesCobraUSDJPY([TimerTrigger("0 */1 * * * MON,TUE,WED,THU", RunOnStartup = true)] TimerInfo timer)
         {
             try
             {

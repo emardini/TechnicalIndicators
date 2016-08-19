@@ -30,7 +30,7 @@
         {
             const string Instrument = "EUR_USD";
             const int periodInMinutes = 10;
-            var accountKey = "xxx";
+            var accountKey = "e304a4993098ea24bd717ab8450db9ed-497a48f0af517ebcb7dd6cc93dae4f49";
             var ratesProvider = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",

@@ -8,6 +8,9 @@
 
     using TechnicalIndicators;
 
+    /// <summary>
+    /// Only works if the account currency is USD
+    /// </summary>
     public class Cobra
     {
         #region Constants
@@ -16,7 +19,7 @@
 
         private const decimal BaseRiskPercentage = 0.02m;
 
-        private const decimal DolarsByPip = 0.0001m;
+        //private const decimal DolarsByPip = 0.0001m;
 
         private const int MaxRateStaleTime = 2;
 
@@ -231,14 +234,14 @@
                 return false;
             }
 
-            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
+            if (currentCandle.IsReversal(GetThreshold()))
             {
                 return false;
             }
 
             var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
 
-            if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+            if (previousCandle.IsReversal(GetThreshold()))
             {
                 return false;
             }
@@ -248,7 +251,7 @@
                 previousCandle = this.candles.TakeLast(3).Skip(2)
                     .FirstOrDefault();
 
-                if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+                if (previousCandle.IsReversal(GetThreshold()))
                 {
                     return false;
                 }
@@ -387,7 +390,8 @@
             }
 
             //TODO: Set history to calculate adx direction in app config
-            var previousAdxValue = this.adx.Values.TakeLast(5).Skip(1).FirstOrDefault() * 100m;
+            //Calculating adx trend with more than one candle back will cause to lost many chances to enter and will enter late
+            var previousAdxValue = this.adx.Values.TakeLast(2).Skip(1).FirstOrDefault() * 100m;
 
             if (currentAdxValue <= previousAdxValue)
             {
@@ -439,15 +443,9 @@
             return currentCandle.Close < previousCandle.Close;
         }
 
-        private static Threshold GetThreshold(string instrument)
+        private static Threshold GetThreshold()
         {
-            switch (instrument)
-            {
-                case "EUR_USD":
-                    return new Threshold { Body = 0.1m, Delta = 0.0003m };
-                default:
-                    return new Threshold { Body = 0.1m, Delta = 0.0001m };
-            }
+            return new Threshold { Body = 0.1m, Delta = 0.0003m };
         }
 
         private void AddCandles(IEnumerable<Candle> initialCandles)
@@ -474,13 +472,19 @@
             }
         }
 
-        private int CalculatePositionSize(decimal stopLoss)
+        private int CalculatePositionSize(decimal stopLoss, string side, Rate currentRate)
         {
             var accountInformation = this.tradingAdapter.GetAccountInformation(this.AccountId);
+            //Account currency should be USD
             var balance = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault();
             var maxRiskAmount = balance * BaseRiskPercentage;
 
-            var positionSize = (maxRiskAmount / stopLoss) / DolarsByPip;
+            var pipFraction = GetPipFraction(currentRate.QuoteCurrency);
+
+            var useRate = side == OrderSideBuy ? currentRate.Ask : currentRate.Bid;
+            //Instead of hardcoding the account currency, better to read it from the api.
+            var maxRiskAmountInQuote = currentRate.QuoteCurrency == "USD" ? maxRiskAmount : maxRiskAmount * useRate;
+            var positionSize = (maxRiskAmountInQuote / stopLoss) / pipFraction;
 
             var accountMarginRate = accountInformation.MarginRate.SafeParseDecimal().GetValueOrDefault();
             var accountLeverage = 1m;
@@ -489,7 +493,7 @@
                 accountLeverage = 1m / accountMarginRate;
             }
 
-            var availablePositionSize =  Math.Min(positionSize, balance*accountLeverage);
+            var availablePositionSize = Math.Min(positionSize, balance * accountLeverage * useRate);
 
             //TODO: Use Kelly Criterior to calculate position size
             //TODO: Implement criterias for minimum stop loss condition
@@ -497,16 +501,22 @@
             return (int)availablePositionSize;
         }
 
-        private decimal CalculateStopLossDistance(string side)
+        private static decimal GetPipFraction(string quoteCurrency)
         {
+            return quoteCurrency == "JPY" ? 0.01M : 0.0001m;
+        }
+
+        private decimal CalculateStopLossDistanceInPips(string side, string quoteCurrency)
+        {
+            var pipFraction = GetPipFraction(quoteCurrency);
             if (side == OrderSideBuy)
             {
                 var lowLimit = this.fastEmaLow.Values.LastOrDefault();
-                return Math.Ceiling((this.CurrentRate.Ask - lowLimit) / DolarsByPip);
+                return Math.Ceiling((this.CurrentRate.Ask - lowLimit) / pipFraction);
             }
 
             var highLimit = this.fastEmaHigh.Values.LastOrDefault();
-            return Math.Abs((highLimit - this.CurrentRate.Bid) / DolarsByPip);
+            return Math.Abs((highLimit - this.CurrentRate.Bid) / pipFraction);
         }
 
         private bool CanGoShort(Rate rate)
@@ -540,14 +550,14 @@
                 return false;
             }
 
-            if (currentCandle.IsReversal(GetThreshold(rate.Instrument)))
+            if (currentCandle.IsReversal(GetThreshold()))
             {
                 return false;
             }
 
             var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
 
-            if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+            if (previousCandle.IsReversal(GetThreshold()))
             {
                 return false;
             }
@@ -556,7 +566,7 @@
             {
                 previousCandle = this.candles.TakeLast(3).Skip(2)
                     .FirstOrDefault();
-                if (previousCandle.IsReversal(GetThreshold(rate.Instrument)))
+                if (previousCandle.IsReversal(GetThreshold()))
                 {
                     return false;
                 }
@@ -572,8 +582,8 @@
 
         private void PlaceOrder(string side, Rate rate)
         {
-            var stopLossDistance = this.CalculateStopLossDistance(side);
-            var positionSizeInUnits = this.CalculatePositionSize(stopLossDistance);
+            var stopLossDistance = this.CalculateStopLossDistanceInPips(side, rate.QuoteCurrency);
+            var positionSizeInUnits = this.CalculatePositionSize(stopLossDistance, side, rate);
             //TODO: Decide if to user lower-upper bounds or just market order and assume the slippage
 
             var newOrder = new Order
@@ -625,8 +635,9 @@
                 return false;
             }
 
-            decimal? spreadPips = (this.CurrentRate.Ask - this.CurrentRate.Bid) / (2 * DolarsByPip);
-            var cushionDeltaPrice = (spreadPips + SlippagePips + MarginalGainPips) * DolarsByPip;
+            var pipFraction = GetPipFraction(currentTrade.QuoteCurrency);
+            decimal? spreadPips = (this.CurrentRate.Ask - this.CurrentRate.Bid) / (2 * pipFraction);
+            var cushionDeltaPrice = (spreadPips + SlippagePips + MarginalGainPips) * pipFraction;
             switch (currentTrade.Side)
             {
                 case OrderSideBuy:

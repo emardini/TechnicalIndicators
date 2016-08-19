@@ -1,4 +1,6 @@
 *	~~Check halted state~~
+*   ~~Build job for GPBUSD and USDJPY~~
+*   Build job for AUDUSD
 *   Change logic to prioritize close/modify order in case of unstable conditions
 *	Health monitoring, alerts and logging (important events, traces)
 *	Add rates, candles, orders and results in permanent store for backtesting, complaints and debugging

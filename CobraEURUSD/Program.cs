@@ -28,7 +28,7 @@
               "https://stream-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/labs/v1/",
-              "xxx");
+              "e304a4993098ea24bd717ab8450db9ed-497a48f0af517ebcb7dd6cc93dae4f49");
 
             container.Bind<Cobra>()
                 .ToConstant(new Cobra(new Adx(14),
