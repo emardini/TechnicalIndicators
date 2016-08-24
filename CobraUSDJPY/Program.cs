@@ -41,7 +41,7 @@
                     10,
                     adapter,
                     adapter,
-                    5027596))
+                    7963842))
                 .InSingletonScope();
 
             container.Bind<IRateProvider>()

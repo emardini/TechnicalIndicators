@@ -1,7 +1,12 @@
 *	~~Check halted state~~
 *   ~~Build job for GPBUSD and USDJPY~~
-*   Build job for AUDUSD
-*   Nedd to allow for a job to execute if there is an open order
+*   ~~Build job for USDCHF
+*   ~~Start transactions if ADX > 35, even if it is not increasing? NO
+*   In mondays take the candles from friday?
+*   Check why the job was stuck in getting candles
+*   Look for an option to Oanda to keep alternatives open
+*   Hide connection strings and azure settings and put it in configuration
+*   ~~Need to allow for a job to execute if there is an open order~~
 *   Change logic to prioritize close/modify order in case of unstable conditions
 *	Health monitoring, alerts and logging (important events, traces)
 *	Add rates, candles, orders and results in permanent store for backtesting, complaints and debugging

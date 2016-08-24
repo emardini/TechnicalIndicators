@@ -37,11 +37,11 @@
                     new Sma(72),
                     new Sma(72),
                     new SimpleDateProvider(),
-                    "GBP_USD",
+                    "USD_CHF",
                     10,
                     adapter,
                     adapter,
-                    7733031))
+                    6923086))
                 .InSingletonScope();
 
             container.Bind<IRateProvider>()
