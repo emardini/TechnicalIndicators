@@ -132,9 +132,9 @@
             {
                 this.AddCandles(initialCandles);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //Log
+                Trace.TraceError(ex.ToString());
             }
 
             this.Id = Guid.NewGuid().ToString();
@@ -188,9 +188,9 @@
             var lastCandle = this.candles.LastOrDefault();
             if (lastCandle != null)
             {
-                if ((newCandle.Timestamp - lastCandle.Timestamp).Minutes != this.PeriodInMinutes)
+                if ((newCandle.Timestamp - lastCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception("The new candle does not follow the sequence");
+                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}", lastCandle.Timestamp, newCandle.Timestamp));
                 }
             }
 
@@ -316,8 +316,7 @@
             {
                 var requiredCandles = this.rateProvider.GetLastCandles(this.Instrument,
                     this.PeriodInMinutes,
-                    nbOfRequiredCandles,
-                    this.CurrentRate.Time).ToList();
+                    nbOfRequiredCandles).ToList();
                 if (requiredCandles.Count() < nbOfRequiredCandles)
                 {
                     Trace.TraceInformation("Not enough candles to check trading");
@@ -335,7 +334,7 @@
                 }
             }
 
-            if (nbOfcandles + nbOfRequiredCandles != this.candles.Count())
+            if (nbOfcandles + nbOfRequiredCandles > this.candles.Count())
             {
                 Trace.TraceInformation("System lagging behind in candles");
                 return;
@@ -459,9 +458,9 @@
             var previousCandle = sortedCandles.First();
             foreach (var candle in sortedCandles.Skip(1))
             {
-                if ((candle.Timestamp - previousCandle.Timestamp).Minutes != this.PeriodInMinutes)
+                if ((candle.Timestamp - previousCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception("The list of candles do not follow the sequence");
+                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}", previousCandle.Timestamp, candle.Timestamp));
                 }
                 previousCandle = candle;
             }

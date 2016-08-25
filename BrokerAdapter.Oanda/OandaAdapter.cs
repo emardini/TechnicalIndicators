@@ -78,20 +78,35 @@
 
             List<Candle> candles;
             try
-            {
-                var endTimeRef = endDateTime.HasValue ? endDateTime.Value : DateTime.UtcNow;
-                var startTimeRef = endTimeRef.AddMinutes(-nbOfCandles * periodInMinutes - 1);
-                var candleResponse =
-                    this.proxy.GetCandlesAsync(new CandlesRequest
+            {                
+                List<OANDARestLibrary.TradeLibrary.DataTypes.Candle> candleResponse;
+                if (endDateTime.HasValue)
+                {
+                    var endTimeRef = EscapeDateValue(endDateTime.Value);
+                    var startTimeRef = EscapeDateValue(endDateTime.Value.AddMinutes(-nbOfCandles * periodInMinutes - 1));
+
+                    candleResponse = this.proxy.GetCandlesAsync(new CandlesRequest
                     {
                         candleFormat = ECandleFormat.midpoint,
                         granularity = GetGranularity(periodInMinutes),
                         instrument = instrument,
-                        count = null,
                         includeFirst = true,
-                        end = Uri.EscapeDataString(endTimeRef.ToUniversalTime().ToString(DateFormat)),
-                        start = Uri.EscapeDataString(startTimeRef.ToUniversalTime().ToString(DateFormat))
+                        end = endTimeRef,
+                        start = startTimeRef
                     }).Result;
+                }
+                else
+                {
+                    var includeFirstRef = new SmartProperty<bool>();
+                    candleResponse = this.proxy.GetCandlesAsync(new CandlesRequest
+                    {
+                        candleFormat = ECandleFormat.midpoint,
+                        granularity = GetGranularity(periodInMinutes),
+                        instrument = instrument,
+                        includeFirst = includeFirstRef,
+                        count = nbOfCandles + 1,
+                    }).Result;
+                }
 
                 candles = candleResponse.Where(x => x.complete)
                     .OrderBy(x => x.time)
@@ -105,6 +120,11 @@
             }
 
             return candles;
+        }
+
+        private static string EscapeDateValue(DateTime thatTime)
+        {
+            return Uri.EscapeDataString(thatTime.ToUniversalTime().ToString(DateFormat));
         }
 
         public virtual Trade GetOpenTrade(int accountId)
