@@ -1,4 +1,4 @@
-namespace LoyaltySynchronization
+namespace CobraUSDJPY
 {
     using Microsoft.Azure.WebJobs.Host;
 

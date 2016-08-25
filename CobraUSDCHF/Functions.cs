@@ -1,4 +1,4 @@
-﻿namespace TraderJob
+﻿namespace CobraUSDCHF
 {
     using System;
     using System.Cobra;

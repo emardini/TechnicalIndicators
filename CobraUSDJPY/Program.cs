@@ -1,12 +1,10 @@
-﻿namespace TraderJob
+﻿namespace CobraUSDJPY
 {
     using System;
     using System.Cobra;
     using System.Diagnostics;
 
     using BrokerAdapter.Oanda;
-
-    using LoyaltySynchronization;
 
     using Microsoft.Azure.WebJobs;
 

@@ -1,4 +1,4 @@
-﻿namespace TraderJob
+﻿namespace CobraUSDJPY
 {
     using System;
     using System.Cobra;

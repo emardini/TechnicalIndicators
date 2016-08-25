@@ -1,4 +1,4 @@
-﻿namespace TraderJob
+﻿namespace CobraEURUSD
 {
     using System;
     using System.Cobra;

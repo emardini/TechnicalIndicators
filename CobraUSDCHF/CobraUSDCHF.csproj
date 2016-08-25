@@ -7,8 +7,8 @@
     <ProjectGuid>{EC231F9D-E358-4F5D-A313-7713B2DE61E4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CobraGBPUSD</RootNamespace>
-    <AssemblyName>CobraGBPUSD</AssemblyName>
+    <RootNamespace>CobraUSDCHF</RootNamespace>
+    <AssemblyName>CobraUSDCHF</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

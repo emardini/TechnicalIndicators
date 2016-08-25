@@ -1,4 +1,4 @@
-namespace LoyaltySynchronization
+namespace CobraGBPUSD
 {
     using Microsoft.Azure.WebJobs.Host;
 

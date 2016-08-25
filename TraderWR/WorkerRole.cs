@@ -56,7 +56,7 @@ namespace TraderWR
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/labs/v1/",
-                "e304a4993098ea24bd717ab8450db9ed-497a48f0af517ebcb7dd6cc93dae4f49");
+                "xxxx");
 
             this.kernel = new StandardKernel();
             this.kernel.Bind<Cobra>()
@@ -70,7 +70,7 @@ namespace TraderWR
                     10,
                     adapter,
                     adapter,
-                    5027596))
+                    0000))
                 .InSingletonScope();
 
             this.kernel.Bind<IRateProvider>()

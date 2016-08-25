@@ -1,4 +1,4 @@
-﻿namespace TraderJob
+﻿namespace CobraGBPUSD
 {
     using System;
     using System.Cobra;
