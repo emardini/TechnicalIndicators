@@ -279,6 +279,41 @@
                 return;
             }
 
+            if (this.tradingAdapter.HasOpenTrade(this.AccountId))
+            {
+                var currentTrade = this.tradingAdapter.GetOpenTrade(this.AccountId);
+                //Not sure if doing this or just keep the trailing stop
+                if (this.ShouldCloseTrade(currentTrade))
+                {
+                    Trace.TraceInformation("Closing trade");
+                    this.tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
+                }
+                else if (this.ShouldModifyTrade(currentTrade))
+                {
+                    Trace.TraceInformation("Break even");
+                    var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0 };
+                    this.tradingAdapter.UpdateTrade(updatedTrade);
+                    return;
+                }
+                else
+                {
+                    Trace.TraceInformation("Open trade");
+                    return;
+                }
+            }
+
+            if (this.tradingAdapter.HasOpenOrder(this.AccountId))
+            {
+                Trace.TraceInformation("Open order");
+                return;
+            }
+
+            if (this.IsBannedDay())
+            {
+                Trace.TraceInformation("Non trading day");
+                return;
+            }
+
             var newRate = this.rateProvider.GetRate(this.Instrument);
             if (this.CurrentRate != null && newRate.Time <= this.CurrentRate.Time)
             {
@@ -344,42 +379,7 @@
             {
                 Trace.TraceInformation("Incomplete indicator values");
                 return;
-            }
-
-            if (this.tradingAdapter.HasOpenTrade(this.AccountId))
-            {
-                var currentTrade = this.tradingAdapter.GetOpenTrade(this.AccountId);
-                //Not sure if doing this or just keep the trailing stop
-                if (this.ShouldCloseTrade(currentTrade))
-                {
-                    Trace.TraceInformation("Closing trade");
-                    this.tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
-                }
-                else if (this.ShouldModifyTrade(currentTrade))
-                {
-                    Trace.TraceInformation("Break even");
-                    var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0 };
-                    this.tradingAdapter.UpdateTrade(updatedTrade);
-                    return;
-                }
-                else
-                {
-                    Trace.TraceInformation("Open trade");
-                    return;
-                }
-            }
-
-            if (this.tradingAdapter.HasOpenOrder(this.AccountId))
-            {
-                Trace.TraceInformation("Open order");
-                return;
-            }
-
-            if (this.IsBannedDay())
-            {
-                Trace.TraceInformation("Non trading day");
-                return;
-            }
+            }        
 
             var currentAdxValue = this.adx.Values.LastOrDefault() * 100;
             if (currentAdxValue < AdxTrendLevel)

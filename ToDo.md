@@ -1,9 +1,12 @@
 *	~~Check halted state~~
 *   ~~Build job for GPBUSD and USDJPY~~
 *   ~~Build job for USDCHF
-*   ~~Start transactions if ADX > 35, even if it is not increasing? NO
+*   Start transactions if ADX > 35, even if it is not increasing?
 *   ~~In mondays take the candles from friday
 *   ~~Check why the job was stuck in getting candles
+*   Investigate why the risk strategy allowed for a loss bigger than the max risk
+*   Investigate using RSI, Stochastic, MACD to spot/confirm trend
+*   Dump all the algorith state before exiting the check, including instrument, adx, moving averages and any other reason causing exit without issuing transaction
 *   Look for an option to Oanda to keep alternatives open
 *   Hide connection strings and azure settings and put it in configuration
 *   ~~Need to allow for a job to execute if there is an open order~~
