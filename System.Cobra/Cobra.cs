@@ -273,6 +273,14 @@
         {
             Trace.CorrelationManager.ActivityId = Guid.NewGuid();
 
+            var newRate = this.rateProvider.GetRate(this.Instrument);
+            if (this.CurrentRate != null && newRate.Time <= this.CurrentRate.Time)
+            {
+                Trace.TraceInformation("No new rates");
+                return;
+            }
+            this.CurrentRate = newRate;
+
             if (this.rateProvider.IsInstrumentHalted(this.Instrument))
             {
                 Trace.TraceInformation("Instrument {0} halted", this.Instrument);
@@ -291,7 +299,7 @@
                 else if (this.ShouldModifyTrade(currentTrade))
                 {
                     Trace.TraceInformation("Break even");
-                    var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0 };
+                    var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0, AccountId = this.AccountId };
                     this.tradingAdapter.UpdateTrade(updatedTrade);
                     return;
                 }
@@ -312,14 +320,7 @@
             {
                 Trace.TraceInformation("Non trading day");
                 return;
-            }
-
-            var newRate = this.rateProvider.GetRate(this.Instrument);
-            if (this.CurrentRate != null && newRate.Time <= this.CurrentRate.Time)
-            {
-                Trace.TraceInformation("No new rates");
-                return;
-            }
+            }           
 
             Trace.TraceInformation("New rate : {0}", JsonConvert.SerializeObject(newRate));
             //TODO: Change logic to prioritize close/modify order in case of unstable conditions
@@ -333,8 +334,6 @@
                     return;
                 }
             }
-
-            this.CurrentRate = newRate;
 
             var nbOfRequiredCandles = 1;
             var lastCandle = this.candles.OrderByDescending(x => x.Timestamp).FirstOrDefault();

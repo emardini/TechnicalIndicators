@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalIndicators", "TechnicalIndicators\TechnicalIndicators.csproj", "{5F9157FD-46D7-43E5-A2FB-B9D6B30AB0D7}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalIndicatorsTests", "TechnicalIndicatorsTests\TechnicalIndicatorsTests.csproj", "{C13103E6-5287-459A-845B-7D906E7CCCBD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Cobra.Tests", "System.Cobra.Tests\System.Cobra.Tests.csproj", "{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}"
-EndProject
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "TraderCS", "TraderCS\TraderCS.ccproj", "{0D979F17-90FE-4E57-A2B6-22D2FBC6B04C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderWR", "TraderWR\TraderWR.csproj", "{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}"
 EndProject
@@ -60,10 +58,6 @@ Global
 		{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0D979F17-90FE-4E57-A2B6-22D2FBC6B04C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D979F17-90FE-4E57-A2B6-22D2FBC6B04C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D979F17-90FE-4E57-A2B6-22D2FBC6B04C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D979F17-90FE-4E57-A2B6-22D2FBC6B04C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
