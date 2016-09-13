@@ -5,7 +5,7 @@
 *   When calculating position size, decrease the risk amount using the spread taking into account that in case of a stop, the stop is calculated with the same price the order as placed and not with the opposite price. 
 *       ~~In mondays take the candles from friday~~
 *       ~~Check why the job was stuck in getting candles~~
-*   Investigate why the risk strategy allowed for a loss bigger than the max risk
+*   ~~Investigate why the risk strategy allowed for a loss bigger than the max risk~~
 *   Investigate using RSI, Stochastic, MACD to spot/confirm trend
 *   Dump all the algorith state before exiting the check, including instrument, adx, moving averages and any other reason causing exit without issuing transaction
 *   Look for an option to Oanda to keep alternatives open
