@@ -1,4 +1,4 @@
-﻿namespace CobraEURUSD
+﻿namespace CobraEURUSD15MI
 {
     using System;
     using System.Cobra;
@@ -40,7 +40,7 @@
                     new Sma(72),
                     new SimpleDateProvider(),
                     "EUR_USD",
-                    10,
+                    15,
                     adapter,
                     adapter,
                     account))

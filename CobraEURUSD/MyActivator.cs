@@ -1,4 +1,4 @@
-namespace CobraEURUSD
+namespace CobraEURUSD15MI
 {
     using Microsoft.Azure.WebJobs.Host;
 

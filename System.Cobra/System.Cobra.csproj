@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Cobra.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValidationResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

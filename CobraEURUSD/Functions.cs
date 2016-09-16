@@ -1,4 +1,4 @@
-﻿namespace CobraEURUSD
+﻿namespace CobraEURUSD15MI
 {
     using System;
     using System.Cobra;

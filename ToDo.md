@@ -2,6 +2,9 @@
 *   ~~Build job for GPBUSD and USDJPY~~
 *   ~~Build job for USDCHF
 *   Start transactions if ADX > 35, even if it is not increasing?
+*   Put stop loss two more pips above the minimum
+*   Add agents for 30 and 60 minutes on the four pairs: 8 more agents and accounts
+*   The decision on closing or modify order depends on new candles, but when there is an open trade, there are no new candles, should modify the procedure to get candles first and then handle the open trade. it will be necesary now to decide what to do if no new candles or prices are coming
 *   ~~In mondays take the candles from friday
 *   ~~Check why the job was stuck in getting candles
 *   Investigate why the risk strategy allowed for a loss bigger than the max risk
@@ -50,3 +53,4 @@
 *   Handle error on leverage and insuficient funds, maybe limiting the position size or stop los size (minimum size)
 *   ~~Verify that the candles are not lagging behind as we do with rates
 *   Check workflow to verify is it is needed to close a position in case of anomaly
+*   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
