@@ -1,4 +1,4 @@
-﻿namespace CobraGBPUSD
+﻿namespace CobraGBPUSD15MI
 {
     using System;
     using System.Cobra;

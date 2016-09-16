@@ -1,4 +1,4 @@
-﻿namespace CobraGBPUSD
+﻿namespace CobraGBPUSD15MI
 {
     using System;
     using System.Cobra;
@@ -36,7 +36,7 @@
                     new Sma(72),
                     new SimpleDateProvider(),
                     "GBP_USD",
-                    10,
+                    15,
                     adapter,
                     adapter,
                     7733031))

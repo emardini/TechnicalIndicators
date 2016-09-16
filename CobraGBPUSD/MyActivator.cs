@@ -1,4 +1,4 @@
-namespace CobraGBPUSD
+namespace CobraGBPUSD15MI
 {
     using Microsoft.Azure.WebJobs.Host;
 

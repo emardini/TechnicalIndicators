@@ -1,4 +1,4 @@
-﻿namespace CobraUSDCHF
+﻿namespace CobraUSDCHF15MI
 {
     using System;
     using System.Cobra;
@@ -36,7 +36,7 @@
                     new Sma(72),
                     new SimpleDateProvider(),
                     "USD_CHF",
-                    10,
+                    15,
                     adapter,
                     adapter,
                     6923086))

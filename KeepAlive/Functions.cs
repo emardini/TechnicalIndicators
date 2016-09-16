@@ -29,7 +29,7 @@
                 var client = new HttpClient();
                 var auth = "Basic "
                            + Convert.ToBase64String(
-                               Encoding.UTF8.GetBytes("$ForexTradingHost" + ':' + "1xmqnek2B8z1Nxn2Rh0TzYSrfQw2WBkj4wzya777vAndpNqdH3cAS5eHk4u9"));
+                               Encoding.UTF8.GetBytes("$ForexTradingHost" + ':' + "Pi0EqW2cgFuk8bEadpn2EfEsv9ap5Bc8F67LuqpuprvjHL28A5baaZvfzayX"));
                 client.DefaultRequestHeaders.Add("authorization", auth);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var data = client.GetStringAsync(webjobUrl).Result;

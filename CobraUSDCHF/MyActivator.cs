@@ -1,4 +1,4 @@
-namespace CobraUSDCHF
+namespace CobraUSDCHF15MI
 {
     using Microsoft.Azure.WebJobs.Host;
 

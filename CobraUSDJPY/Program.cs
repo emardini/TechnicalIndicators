@@ -1,4 +1,4 @@
-﻿namespace CobraUSDJPY
+﻿namespace CobraUSDJPY15MI
 {
     using System;
     using System.Cobra;
@@ -36,7 +36,7 @@
                     new Sma(72),
                     new SimpleDateProvider(),
                     "USD_JPY",
-                    10,
+                    15,
                     adapter,
                     adapter,
                     7963842))

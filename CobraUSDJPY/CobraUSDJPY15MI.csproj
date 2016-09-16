@@ -7,8 +7,8 @@
     <ProjectGuid>{D095E2D6-72CA-4C32-B70B-9473CD653A2D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CobraUSDJPY</RootNamespace>
-    <AssemblyName>CobraUSDJPY</AssemblyName>
+    <RootNamespace>CobraUSDJPY15MI</RootNamespace>
+    <AssemblyName>CobraUSDJPY15MI</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

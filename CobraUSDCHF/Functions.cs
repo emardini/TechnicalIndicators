@@ -1,4 +1,4 @@
-﻿namespace CobraUSDCHF
+﻿namespace CobraUSDCHF15MI
 {
     using System;
     using System.Cobra;

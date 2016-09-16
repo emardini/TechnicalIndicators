@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
-  "webJobName": "CobraGBPUSD",
+  "webJobName": "CobraGBPUSD15MI",
   "startTime": null,
   "endTime": null,
   "jobRecurrenceFrequency": null,
