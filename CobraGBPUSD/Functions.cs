@@ -1,4 +1,4 @@
-﻿namespace CobraGBPUSD15MI
+﻿namespace CobraUSDJPY15MI
 {
     using System;
     using System.Cobra;

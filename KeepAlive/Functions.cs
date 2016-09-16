@@ -21,7 +21,7 @@
         public static void KeepAlive([TimerTrigger("0 */5 * * * *", RunOnStartup = true)] TimerInfo timer)
         {
             const string WebsiteName = "forextradinghost";
-            var webjobNames = new List<string> { "CobraEURUSD", "CobraGBPUSD", "CobraUSDJPY" };
+            var webjobNames = new List<string> { "CobraEURUSD15MI", "CobraGBPUSD15MI", "CobraUSDCHF15MI" };
             foreach (var webJobName in webjobNames)
             {
                 var webjobUrl = string.Format("https://{0}.scm.azurewebsites.net/api/continuouswebjobs/{1}", WebsiteName, webJobName);
