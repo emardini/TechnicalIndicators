@@ -1,7 +1,8 @@
-﻿namespace CobraUSDJPY15MI
+﻿namespace CobraEURUSD30MI
 {
     using System;
     using System.Cobra;
+    using System.Configuration;
     using System.Diagnostics;
 
     using BrokerAdapter.Oanda;
@@ -21,12 +22,14 @@
         {
             var container = new StandardKernel();
 
-            var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
+            var token = ConfigurationManager.AppSettings["TOKEN"];
+
+            var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v3/",
               "https://api-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/labs/v1/",
-              "e304a4993098ea24bd717ab8450db9ed-497a48f0af517ebcb7dd6cc93dae4f49");
+              token);
 
             container.Bind<Cobra>()
                 .ToConstant(new Cobra(new Adx(14),
@@ -35,11 +38,11 @@
                     new Sma(72),
                     new Sma(72),
                     new SimpleDateProvider(),
-                    "USD_JPY",
-                    15,
+                    "EUR_USD",
+                    30,
                     adapter,
                     adapter,
-                    "7963842"))
+                    "101-001-2773283-001"))
                 .InSingletonScope();
 
             container.Bind<IRateProvider>()
@@ -57,7 +60,7 @@
             {
                 JobActivator = new MyActivator(container)
             };
-            config.Tracing.ConsoleLevel = TraceLevel.Verbose;
+            config.Tracing.ConsoleLevel = TraceLevel.Info;
             config.UseTimers();
 
             var host = new JobHost(config);

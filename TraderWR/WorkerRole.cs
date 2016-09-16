@@ -70,7 +70,7 @@ namespace TraderWR
                     10,
                     adapter,
                     adapter,
-                    0000))
+                    ""))
                 .InSingletonScope();
 
             this.kernel.Bind<IRateProvider>()

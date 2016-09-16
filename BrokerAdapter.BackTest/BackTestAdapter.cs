@@ -48,13 +48,13 @@
 
         #region Public Methods and Operators
 
-        public void CloseTrade(int accountId, long tradeId)
+        public void CloseTrade(string accountId, long tradeId)
         {
             this.hasOpenOrder = false;
             this.hasOpenTrade = false;
         }
 
-        public AccountInformation GetAccountInformation(int accountId)
+        public AccountInformation GetAccountInformation(string accountId)
         {
             return new AccountInformation { Balance = "10000" };
         }
@@ -71,7 +71,7 @@
             return filteredCandles.TakeLast(nbOfCandles);
         }
 
-        public Trade GetOpenTrade(int accountId)
+        public Trade GetOpenTrade(string accountId)
         {
             return new Trade();
         }
@@ -94,12 +94,12 @@
             return new Rate { Ask = rateValue, Bid = rateValue, Instrument = instrument, Time = timestamp };
         }
 
-        public bool HasOpenOrder(int accountId)
+        public bool HasOpenOrder(string accountId)
         {
             return this.hasOpenOrder;
         }
 
-        public bool HasOpenTrade(int accountId)
+        public bool HasOpenTrade(string accountId)
         {
             return this.hasOpenTrade;
         }

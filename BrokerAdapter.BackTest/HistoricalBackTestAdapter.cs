@@ -87,7 +87,7 @@
 
         #region Public Methods and Operators
 
-        public override void CloseTrade(int accountId, long tradeId)
+        public override void CloseTrade(string accountId, long tradeId)
         {
             var gainLoss = 0m;
             if (this.currentTrade.Side == OrderSideBuy)
@@ -124,7 +124,7 @@
             return result.OrderBy(x => x.Timestamp);
         }
 
-        public override Trade GetOpenTrade(int accountId)
+        public override Trade GetOpenTrade(string accountId)
         {
             return this.currentTrade;
         }
@@ -214,12 +214,12 @@
             return this.CurrentRate;
         }
 
-        public override bool HasOpenOrder(int accountId)
+        public override bool HasOpenOrder(string accountId)
         {
             return this.currentTrade != null;
         }
 
-        public override bool HasOpenTrade(int accountId)
+        public override bool HasOpenTrade(string accountId)
         {
             return this.HasOpenOrder(accountId);
         }

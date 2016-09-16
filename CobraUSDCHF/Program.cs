@@ -39,7 +39,7 @@
                     15,
                     adapter,
                     adapter,
-                    6923086))
+                    "6923086"))
                 .InSingletonScope();
 
             container.Bind<IRateProvider>()

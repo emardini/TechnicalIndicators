@@ -73,7 +73,7 @@
             int periodInMinutes,
             ITradingAdapter tradingAdapter,
             IRateProvider rateProvider,
-            int accountId,
+            string accountId,
             bool isBackTest = false)
         {
             if (adx == null)
@@ -144,7 +144,7 @@
 
         #region Public Properties
 
-        public int AccountId { get; private set; }
+        public string AccountId { get; private set; }
 
         public Rate CurrentRate { get; private set; }
 

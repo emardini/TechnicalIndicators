@@ -6,7 +6,7 @@
     {
         #region Public Properties
 
-        public int AcountId { get; set; }
+        public string AcountId { get; set; }
 
         public DateTime? Expiry { get; set; }
 

@@ -43,14 +43,14 @@
 
         #region Public Methods and Operators
 
-        public virtual void CloseTrade(int accountId, long tradeId)
+        public virtual void CloseTrade(string accountId, long tradeId)
         {
             //TODO: Implement retries and notification in case the system cannot close the trade.
             //Which actions can it take if is not possible to close the order
             var response = this.proxy.DeleteTradeAsync(accountId, tradeId).Result;
         }
 
-        public virtual AccountInformation GetAccountInformation(int accountId)
+        public virtual AccountInformation GetAccountInformation(string accountId)
         {
             var response =
                 this.proxy.GetAccountDetailsAsync(accountId).Result;
@@ -127,7 +127,7 @@
             return Uri.EscapeDataString(thatTime.ToUniversalTime().ToString(DateFormat));
         }
 
-        public virtual Trade GetOpenTrade(int accountId)
+        public virtual Trade GetOpenTrade(string accountId)
         {
             var response =
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
@@ -161,7 +161,7 @@
             return rate;
         }
 
-        public virtual bool HasOpenOrder(int accountId)
+        public virtual bool HasOpenOrder(string accountId)
         {
             var response =
                 this.proxy.GetOrderListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
@@ -169,7 +169,7 @@
             return response.Any();
         }
 
-        public virtual bool HasOpenTrade(int accountId)
+        public virtual bool HasOpenTrade(string accountId)
         {
             var response =
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;

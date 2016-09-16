@@ -23,7 +23,7 @@
             var container = new StandardKernel();
 
             var token = ConfigurationManager.AppSettings["TOKEN"];
-            var account = ConfigurationManager.AppSettings["ACCOUNT_EUR_USD"].SafeParseInt().GetValueOrDefault(); 
+            var account = ConfigurationManager.AppSettings["ACCOUNT_EUR_USD"]; 
 
             var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/v1/",

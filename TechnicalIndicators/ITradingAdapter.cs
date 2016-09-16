@@ -5,20 +5,20 @@
 
     public interface ITradingAdapter
     {
-        bool HasOpenOrder(int accountId);
+        bool HasOpenOrder(string accountId);
 
-        bool HasOpenTrade(int accountId);
+        bool HasOpenTrade(string accountId);
 
-        Trade GetOpenTrade(int accountId);
+        Trade GetOpenTrade(string accountId);
 
-        void CloseTrade(int accountId, long tradeId);
+        void CloseTrade(string accountId, long tradeId);
 
         void PlaceOrder(Order order);
 
 
         void UpdateTrade(Trade updatedTrade);
 
-        AccountInformation GetAccountInformation(int accountId);
+        AccountInformation GetAccountInformation(string accountId);
 
         IEnumerable<Candle> GetLastCandles(string p1, int p2, int p3, DateTime? endDateTime=null);
     }
