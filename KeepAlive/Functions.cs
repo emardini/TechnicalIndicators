@@ -21,19 +21,20 @@
         public static void KeepAlive([TimerTrigger("0 */5 * * * *", RunOnStartup = true)] TimerInfo timer)
         {
             const string WebsiteName = "forextradinghost";
-            var webjobNames = new List<string> { "CobraEURUSD15MI", "CobraGBPUSD15MI", "CobraUSDCHF15MI" };
+            var webjobNames = new List<string> { "CobraEURUSD15MI", "CobraUSDJPY15MI", "CobraGBPUSD15MI", "CobraUSDCHF15MI" };
             foreach (var webJobName in webjobNames)
             {
-                var webjobUrl = string.Format("https://{0}.scm.azurewebsites.net/api/continuouswebjobs/{1}", WebsiteName, webJobName);
+                var webjobUrl = string.Format("https://{0}.scm.azurewebsites.net/api/continuouswebjobs/{1}/start", WebsiteName, webJobName);
 
                 var client = new HttpClient();
                 var auth = "Basic "
                            + Convert.ToBase64String(
-                               Encoding.UTF8.GetBytes("$ForexTradingHost" + ':' + "Pi0EqW2cgFuk8bEadpn2EfEsv9ap5Bc8F67LuqpuprvjHL28A5baaZvfzayX"));
+                               Encoding.UTF8.GetBytes("$forextradinghost" + ':' + "Jngj8QxdSJKnJNB2fYWqcxf2vgZJXnPsp0dy7cbTRle22edQ2lruiY7gSPoj"));
                 client.DefaultRequestHeaders.Add("authorization", auth);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var data = client.GetStringAsync(webjobUrl).Result;
-                var result = JsonConvert.DeserializeObject(data) as JObject;
+                StringContent queryString = new StringContent(string.Empty);
+                var data = client.PostAsync(webjobUrl, queryString).Result;
+                var result = data.ReasonPhrase;
             }
         }
 

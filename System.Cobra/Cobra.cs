@@ -9,7 +9,7 @@
     using TechnicalIndicators;
 
     /// <summary>
-    /// Only works if the account currency is USD
+    ///     Only works if the account currency is USD
     /// </summary>
     public class Cobra
     {
@@ -18,6 +18,8 @@
         private const int AdxTrendLevel = 22;
 
         private const decimal BaseRiskPercentage = 0.02m;
+
+        private const int MarginalGainPips = 3;
 
         //private const decimal DolarsByPip = 0.0001m;
 
@@ -33,7 +35,7 @@
 
         private const int SlippagePips = 3;
 
-        private const int MarginalGainPips = 3;
+        private const decimal MaxSpread = 3.00m;
 
         #endregion
 
@@ -144,39 +146,19 @@
 
         #region Public Properties
 
-        public int AccountId { get; private set; }
+        public int AccountId { get; }
 
         public Rate CurrentRate { get; private set; }
 
         public string Id { get; private set; }
 
-        public string Instrument { get; private set; }
+        public string Instrument { get; }
 
-        public int PeriodInMinutes { get; private set; }
+        public int PeriodInMinutes { get; }
 
         #endregion
 
         #region Public Methods and Operators
-
-        public bool ConfirmPreviousCandleForAsk(Candle previousCandle, Candle currentCandle)
-        {
-            if (previousCandle == null)
-            {
-                return false;
-            }
-
-            if (currentCandle == null)
-            {
-                return false;
-            }
-
-            if (!previousCandle.IsUp)
-            {
-                return false;
-            }
-
-            return currentCandle.Close > previousCandle.Close;
-        }
 
         public void AddCandle(Candle newCandle)
         {
@@ -190,7 +172,9 @@
             {
                 if ((newCandle.Timestamp - lastCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}", lastCandle.Timestamp, newCandle.Timestamp));
+                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}",
+                        lastCandle.Timestamp,
+                        newCandle.Timestamp));
                 }
             }
 
@@ -246,7 +230,7 @@
                 return false;
             }
 
-            if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
+            if (!this.ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
             {
                 previousCandle = this.candles.TakeLast(3).Skip(2)
                     .FirstOrDefault();
@@ -256,7 +240,7 @@
                     return false;
                 }
 
-                if (!ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
+                if (!this.ConfirmPreviousCandleForAsk(previousCandle, currentCandle))
                 {
                     return false;
                 }
@@ -271,7 +255,7 @@
         /// </summary>
         public void CheckRate()
         {
-            Trace.CorrelationManager.ActivityId = Guid.NewGuid();          
+            Trace.CorrelationManager.ActivityId = Guid.NewGuid();
 
             if (this.rateProvider.IsInstrumentHalted(this.Instrument))
             {
@@ -292,9 +276,9 @@
             {
                 this.CurrentRate = newRate;
             }
-           
+
             Trace.TraceInformation("New rate : {0}", JsonConvert.SerializeObject(newRate));
-            
+
             if (!this.isBackTest)
             {
                 var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time.ToUniversalTime();
@@ -322,7 +306,7 @@
                     nbOfRequiredCandles).ToList();
                 if (requiredCandles.Count() < nbOfRequiredCandles)
                 {
-                    validations.AddErrorMessage("Not enough candles to check trading");                    
+                    validations.AddErrorMessage("Not enough candles to check trading");
                 }
 
                 try
@@ -338,12 +322,12 @@
 
             if (nbOfcandles + nbOfRequiredCandles > this.candles.Count())
             {
-                validations.AddErrorMessage("System lagging behind in candles");                
+                validations.AddErrorMessage("System lagging behind in candles");
             }
 
             if (!this.ValidateIndicatorsState(newRate))
             {
-                validations.AddErrorMessage("Incomplete indicator values");                
+                validations.AddErrorMessage("Incomplete indicator values");
             }
 
             if (this.tradingAdapter.HasOpenTrade(this.AccountId))
@@ -356,13 +340,13 @@
                 {
                     Trace.TraceInformation("Closing trade because of validation errors and open trade with stop loss");
                     //If the trade is open with stop loss, it is likely that we can close the trade with a profit
-                    tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
+                    this.tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
                     Trace.TraceError(validations.ToString());
                     return;
                 }
 
                 if (!validations.IsValid)
-                {                    
+                {
                     Trace.TraceInformation("Exit early because of validation errors and open trade");
                     Trace.TraceError(validations.ToString());
                     return;
@@ -371,19 +355,26 @@
                 if (this.ShouldCloseTrade(currentTrade))
                 {
                     Trace.TraceInformation("Closing trade");
-                    tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
+                    this.tradingAdapter.CloseTrade(this.AccountId, currentTrade.Id);
                     return;
                 }
 
                 if (this.ShouldSetStopLoss(currentTrade, newRate))
                 {
                     Trace.TraceInformation("Break even");
-                    var updatedTrade = new Trade { Id = currentTrade.Id, StopLoss = currentTrade.TrailingAmount, TrailingStop = 0, TakeProfit = 0, AccountId = this.AccountId };
+                    var updatedTrade = new Trade
+                    {
+                        Id = currentTrade.Id,
+                        StopLoss = currentTrade.TrailingAmount,
+                        TrailingStop = 0,
+                        TakeProfit = 0,
+                        AccountId = this.AccountId
+                    };
                     this.tradingAdapter.UpdateTrade(updatedTrade);
                     return;
                 }
-  
-                Trace.TraceInformation(string.Format("Exit early because of open trade, trailing amount {0}", currentTrade.TrailingAmount));
+
+                Trace.TraceInformation("Exit early because of open trade, trailing amount {0}", currentTrade.TrailingAmount);
                 return;
             }
 
@@ -406,6 +397,13 @@
             //    return;
             //}
 
+            var currentSpread = Math.Abs(newRate.Ask - newRate.Bid);
+            if (currentSpread > MaxSpread)
+            {
+                Trace.TraceInformation($"Not enough liquidity, spread = {currentSpread}");
+                return;
+            }
+
             var currentAdxValue = this.adx.Values.LastOrDefault() * 100;
             if (currentAdxValue < AdxTrendLevel)
             {
@@ -420,7 +418,7 @@
             if (currentAdxValue <= previousAdxValue)
             {
                 Trace.TraceInformation("ADX not increasing {0} => {1}", previousAdxValue, currentAdxValue);
-                return;  
+                return;
             }
 
             if (this.CanGoLong(newRate))
@@ -433,6 +431,26 @@
             {
                 this.PlaceOrder(OrderSideSell, newRate);
             }
+        }
+
+        public bool ConfirmPreviousCandleForAsk(Candle previousCandle, Candle currentCandle)
+        {
+            if (previousCandle == null)
+            {
+                return false;
+            }
+
+            if (currentCandle == null)
+            {
+                return false;
+            }
+
+            if (!previousCandle.IsUp)
+            {
+                return false;
+            }
+
+            return currentCandle.Close > previousCandle.Close;
         }
 
         public bool IsBannedDay()
@@ -467,6 +485,11 @@
             return currentCandle.Close < previousCandle.Close;
         }
 
+        private static decimal GetPipFraction(string quoteCurrency)
+        {
+            return quoteCurrency == "JPY" ? 0.01M : 0.0001m;
+        }
+
         private static Threshold GetThreshold()
         {
             return new Threshold { Body = 0.1m, Delta = 0.0003m };
@@ -485,7 +508,9 @@
             {
                 if ((candle.Timestamp - previousCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}", previousCandle.Timestamp, candle.Timestamp));
+                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}",
+                        previousCandle.Timestamp,
+                        candle.Timestamp));
                 }
                 previousCandle = candle;
             }
@@ -523,11 +548,6 @@
             //TODO: Implement criterias for minimum stop loss condition
 
             return (int)availablePositionSize;
-        }
-
-        private static decimal GetPipFraction(string quoteCurrency)
-        {
-            return quoteCurrency == "JPY" ? 0.01M : 0.0001m;
         }
 
         private decimal CalculateStopLossDistanceInPips(string side, string quoteCurrency, Rate currentRate)

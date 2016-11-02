@@ -1,7 +1,8 @@
-﻿namespace CobraGBPUSD5MI
+﻿namespace CobraGBPUSD15MI
 {
     using System;
     using System.Cobra;
+    using System.Configuration;
     using System.Diagnostics;
 
     using BrokerAdapter.Oanda;
@@ -21,12 +22,15 @@
         {
             var container = new StandardKernel();
 
+            var token = ConfigurationManager.AppSettings["TOKEN"];
+            var account = ConfigurationManager.AppSettings["ACCOUNT_GBP_USD"].SafeParseInt().GetValueOrDefault(); 
+
             var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/labs/v1/",
-              "e304a4993098ea24bd717ab8450db9ed-497a48f0af517ebcb7dd6cc93dae4f49");
+              token);
 
             container.Bind<Cobra>()
                 .ToConstant(new Cobra(new Adx(14),
@@ -39,7 +43,7 @@
                     15,
                     adapter,
                     adapter,
-                    7733031))
+                    account))
                 .InSingletonScope();
 
             container.Bind<IRateProvider>()
@@ -57,7 +61,7 @@
             {
                 JobActivator = new MyActivator(container)
             };
-            config.Tracing.ConsoleLevel = TraceLevel.Verbose;
+            config.Tracing.ConsoleLevel = TraceLevel.Info;
             config.UseTimers();
 
             var host = new JobHost(config);

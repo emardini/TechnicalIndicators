@@ -36,7 +36,7 @@ namespace System.Cobra
 
         public override string ToString()
         {
-            return string.Format("{IsValid:{0}, ErrorMessages:[{1}]", this.IsValid, string.Join(",", this.ErrorMessages));
+            return string.Format("IsValid:{0}, ErrorMessages:[{1}]", this.IsValid, string.Join(",", this.ErrorMessages));
         }
     }
 }

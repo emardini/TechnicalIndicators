@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnicalIndicatorsTests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Cobra.Tests", "System.Cobra.Tests\System.Cobra.Tests.csproj", "{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderWR", "TraderWR\TraderWR.csproj", "{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrokerAdapter.Oanda", "BrokerAdapter.Oanda\BrokerAdapter.Oanda.csproj", "{3B8F638C-BBFB-4831-8530-FA309CECD770}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OANDARestLibrary", "..\rest-csharp-refimpl-emardini\Reference Implementation\OANDARestLibrary\OANDARestLibrary.csproj", "{22F134F0-E5A3-496A-BE6B-75680F014388}"
@@ -28,13 +26,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeepAlive", "KeepAlive\KeepAlive.csproj", "{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraGBPUSD15MI", "CobraGBPUSD\CobraGBPUSD15MI.csproj", "{A476700D-BDDE-408A-B2B5-F6957D29685A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraEURUSD15MI", "CobraEURUSD\CobraEURUSD15MI.csproj", "{166B6F48-04C8-4E25-AC64-E452F0EA441B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraUSDCHF15MI", "CobraUSDCHF\CobraUSDCHF15MI.csproj", "{EC231F9D-E358-4F5D-A313-7713B2DE61E4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraUSDJPY15MI", "CobraUSDJPY15MI\CobraUSDJPY15MI.csproj", "{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebJobHost", "WebJobHost\WebJobHost.csproj", "{2BF2346E-FCBA-492E-96C9-FD4478B727BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{E032C7AA-A0DA-49D0-9B20-6C6BA1F3850C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{8B6A020C-0C5D-4B6C-8C40-4E765DDF9E68}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Scripts\Deploy-AzureResourceGroup.ps1 = PublishScripts\Scripts\Deploy-AzureResourceGroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{D486D7CF-7340-4213-BC76-25D5AEB09F69}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Templates\WebJobHost.json = PublishScripts\Templates\WebJobHost.json
+		PublishScripts\Templates\WebJobHost.param.dev.json = PublishScripts\Templates\WebJobHost.param.dev.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraGBPUSD15MI", "CobraGBPUSD15MI\CobraGBPUSD15MI.csproj", "{00C2F64C-1A14-43BB-8AB0-7A9933C37EAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraEURUSD15MI", "CobraEURUSD15MI\CobraEURUSD15MI.csproj", "{166B6F48-04C8-4E25-AC64-E452F0EA441B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraUSDCHF15MI", "CobraUSDCHF15MI\CobraUSDCHF15MI.csproj", "{EC231F9D-E358-4F5D-A313-7713B2DE61E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,10 +71,6 @@ Global
 		{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD8B7F4B-7E8A-4E6E-B5A6-FA5D0F7947B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D730D16-DF10-4F39-B1ED-DF49C8A7CDC6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B8F638C-BBFB-4831-8530-FA309CECD770}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B8F638C-BBFB-4831-8530-FA309CECD770}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B8F638C-BBFB-4831-8530-FA309CECD770}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -82,10 +91,18 @@ Global
 		{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{872A7991-54D5-4A3C-94CE-F3418DD8CDA1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A476700D-BDDE-408A-B2B5-F6957D29685A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A476700D-BDDE-408A-B2B5-F6957D29685A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A476700D-BDDE-408A-B2B5-F6957D29685A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A476700D-BDDE-408A-B2B5-F6957D29685A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BF2346E-FCBA-492E-96C9-FD4478B727BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BF2346E-FCBA-492E-96C9-FD4478B727BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BF2346E-FCBA-492E-96C9-FD4478B727BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BF2346E-FCBA-492E-96C9-FD4478B727BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C2F64C-1A14-43BB-8AB0-7A9933C37EAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C2F64C-1A14-43BB-8AB0-7A9933C37EAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C2F64C-1A14-43BB-8AB0-7A9933C37EAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C2F64C-1A14-43BB-8AB0-7A9933C37EAA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{166B6F48-04C8-4E25-AC64-E452F0EA441B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{166B6F48-04C8-4E25-AC64-E452F0EA441B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{166B6F48-04C8-4E25-AC64-E452F0EA441B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -94,12 +111,12 @@ Global
 		{EC231F9D-E358-4F5D-A313-7713B2DE61E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC231F9D-E358-4F5D-A313-7713B2DE61E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC231F9D-E358-4F5D-A313-7713B2DE61E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0FEF36C-2A11-4A16-B0A7-8F4D51BAE554}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8B6A020C-0C5D-4B6C-8C40-4E765DDF9E68} = {E032C7AA-A0DA-49D0-9B20-6C6BA1F3850C}
+		{D486D7CF-7340-4213-BC76-25D5AEB09F69} = {E032C7AA-A0DA-49D0-9B20-6C6BA1F3850C}
 	EndGlobalSection
 EndGlobal
