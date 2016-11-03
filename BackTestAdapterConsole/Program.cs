@@ -60,8 +60,7 @@
                 periodInMinutes,
                 backTestAdapter,
                 backTestAdapter,
-                0000,
-                true);
+                0000);
 
             for (var i = 0; i < candles.Count() * 5; i++)
             {

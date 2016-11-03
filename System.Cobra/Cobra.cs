@@ -25,6 +25,8 @@
 
         private const int MaxRateStaleTime = 2;
 
+        private const decimal MaxSpread = 3.00m;
+
         private const int MinNbOfCandles = 72;
 
         private const string OrderSideBuy = "buy";
@@ -34,8 +36,6 @@
         private const string OrderTypeMarket = "market";
 
         private const int SlippagePips = 3;
-
-        private const decimal MaxSpread = 3.00m;
 
         #endregion
 
@@ -50,8 +50,6 @@
         private readonly Ema fastEmaHigh;
 
         private readonly Ema fastEmaLow;
-
-        private readonly bool isBackTest;
 
         private readonly IRateProvider rateProvider;
 
@@ -75,44 +73,43 @@
             int periodInMinutes,
             ITradingAdapter tradingAdapter,
             IRateProvider rateProvider,
-            int accountId,
-            bool isBackTest = false)
+            int accountId)
         {
             if (adx == null)
             {
-                throw new ArgumentNullException("adx");
+                throw new ArgumentNullException(nameof(adx));
             }
             if (fastEmaHigh == null)
             {
-                throw new ArgumentNullException("fastEmaHigh");
+                throw new ArgumentNullException(nameof(fastEmaHigh));
             }
             if (fastEmaLow == null)
             {
-                throw new ArgumentNullException("fastEmaLow");
+                throw new ArgumentNullException(nameof(fastEmaLow));
             }
             if (slowSmaHigh == null)
             {
-                throw new ArgumentNullException("slowSmaHigh");
+                throw new ArgumentNullException(nameof(slowSmaHigh));
             }
             if (slowSmaLow == null)
             {
-                throw new ArgumentNullException("slowSmaLow");
+                throw new ArgumentNullException(nameof(slowSmaLow));
             }
             if (dateProvider == null)
             {
-                throw new ArgumentNullException("dateProvider");
+                throw new ArgumentNullException(nameof(dateProvider));
             }
             if (tradingAdapter == null)
             {
-                throw new ArgumentNullException("tradingAdapter");
+                throw new ArgumentNullException(nameof(tradingAdapter));
             }
             if (rateProvider == null)
             {
-                throw new ArgumentNullException("rateProvider");
+                throw new ArgumentNullException(nameof(rateProvider));
             }
             if (string.IsNullOrWhiteSpace(instrument))
             {
-                throw new ArgumentNullException("instrument");
+                throw new ArgumentNullException(nameof(instrument));
             }
 
             this.adx = adx;
@@ -124,7 +121,6 @@
             this.Instrument = instrument;
             this.tradingAdapter = tradingAdapter;
             this.rateProvider = rateProvider;
-            this.isBackTest = isBackTest;
             this.AccountId = accountId;
             this.PeriodInMinutes = periodInMinutes;
 
@@ -160,7 +156,7 @@
 
         #region Public Methods and Operators
 
-        public void AddCandle(Candle newCandle)
+        private void AddCandle(Candle newCandle)
         {
             if (this.candles.Any(x => x.Timestamp == newCandle.Timestamp))
             {
@@ -172,7 +168,7 @@
             {
                 if ((newCandle.Timestamp - lastCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}",
+                    throw new Exception(string.Format("The list of candles do not follow the sequence: {0} to {2}",
                         lastCandle.Timestamp,
                         newCandle.Timestamp));
                 }
@@ -253,20 +249,11 @@
         ///     Should happen every minute because the check needs to be frequent,
         ///     but the candles are queried in the predefined timeframe
         /// </summary>
-        public void CheckRate()
+        public void CheckRate(Rate newRate)
         {
             Trace.CorrelationManager.ActivityId = Guid.NewGuid();
 
-            if (this.rateProvider.IsInstrumentHalted(this.Instrument))
-            {
-                //If instrument is halted, there is nothing that can be done
-                Trace.TraceInformation("Instrument {0} halted", this.Instrument);
-                return;
-            }
-
             var validations = new ValidationResult();
-
-            var newRate = this.rateProvider.GetRate(this.Instrument);
             if (this.CurrentRate != null && newRate.Time < this.CurrentRate.Time)
             {
                 //This is likely to happen in a backtest or practice scenario                 
@@ -279,50 +266,10 @@
 
             Trace.TraceInformation("New rate : {0}", JsonConvert.SerializeObject(newRate));
 
-            if (!this.isBackTest)
+            var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time.ToUniversalTime();
+            if (systemTimeDiff.TotalMinutes >= MaxRateStaleTime)
             {
-                var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time.ToUniversalTime();
-                if (systemTimeDiff.TotalMinutes >= MaxRateStaleTime)
-                {
-                    validations.AddErrorMessage("Price timer lagging behind current time");
-                }
-            }
-
-            var nbOfRequiredCandles = 1;
-            var lastCandle = this.candles.OrderByDescending(x => x.Timestamp).FirstOrDefault();
-            if (lastCandle != null)
-            {
-                var timeDiffMinutesRaw = Math.Abs((newRate.Time - lastCandle.Timestamp).TotalMinutes);
-                var timeDiffMinutes = timeDiffMinutesRaw > int.MaxValue ? int.MaxValue : (int)timeDiffMinutesRaw;
-                nbOfRequiredCandles = (timeDiffMinutes - this.PeriodInMinutes) / this.PeriodInMinutes;
-                nbOfRequiredCandles = nbOfRequiredCandles < 0 ? 0 : nbOfRequiredCandles;
-            }
-
-            var nbOfcandles = this.candles.Count();
-            if (nbOfRequiredCandles > 0)
-            {
-                var requiredCandles = this.rateProvider.GetLastCandles(this.Instrument,
-                    this.PeriodInMinutes,
-                    nbOfRequiredCandles).ToList();
-                if (requiredCandles.Count() < nbOfRequiredCandles)
-                {
-                    validations.AddErrorMessage("Not enough candles to check trading");
-                }
-
-                try
-                {
-                    this.AddCandles(requiredCandles);
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceError(ex.ToString());
-                    validations.AddErrorMessage("Error reading candles");
-                }
-            }
-
-            if (nbOfcandles + nbOfRequiredCandles > this.candles.Count())
-            {
-                validations.AddErrorMessage("System lagging behind in candles");
+                validations.AddErrorMessage("Price timer lagging behind current time");
             }
 
             if (!this.ValidateIndicatorsState(newRate))
@@ -433,6 +380,58 @@
             }
         }
 
+        public void CheckRate()
+        {
+            if (this.rateProvider.IsInstrumentHalted(this.Instrument))
+            {
+                //If instrument is halted, there is nothing that can be done
+                Trace.TraceInformation("Instrument {0} halted", this.Instrument);
+                return;
+            }
+
+            var newRate = this.rateProvider.GetRate(this.Instrument);
+
+            var lastCandle = this.candles.OrderByDescending(x => x.Timestamp).FirstOrDefault();           
+            var nbOfRequiredCandles = 1;
+
+            if (lastCandle != null)
+            {
+                var timeDiffMinutesRaw = Math.Abs((newRate.Time - lastCandle.Timestamp).TotalMinutes);
+                var timeDiffMinutes = timeDiffMinutesRaw > int.MaxValue ? int.MaxValue : (int)timeDiffMinutesRaw;
+                nbOfRequiredCandles = (timeDiffMinutes - this.PeriodInMinutes) / this.PeriodInMinutes;
+                nbOfRequiredCandles = nbOfRequiredCandles < 0 ? 0 : nbOfRequiredCandles;
+            }
+
+            var nbOfcandles = this.candles.Count;
+            if (nbOfRequiredCandles > 0)
+            {
+                var lastCandles = this.rateProvider.GetLastCandles(this.Instrument,
+                    this.PeriodInMinutes,
+                    nbOfRequiredCandles).ToList();
+                if (lastCandles.Count < nbOfRequiredCandles)
+                {
+                    Trace.TraceWarning("Not enough candles to check trading, positions can still be closed");
+                }
+
+                try
+                {
+                    //Still adding the candles
+                    this.AddCandles(lastCandles);
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError(ex.ToString());
+                }
+            }
+
+            if (nbOfcandles + nbOfRequiredCandles > this.candles.Count)
+            {
+                Trace.TraceWarning("System lagging behind in candles");
+            }
+
+            this.CheckRate(newRate);
+        }
+
         public bool ConfirmPreviousCandleForAsk(Candle previousCandle, Candle currentCandle)
         {
             if (previousCandle == null)
@@ -495,7 +494,7 @@
             return new Threshold { Body = 0.1m, Delta = 0.0003m };
         }
 
-        private void AddCandles(IEnumerable<Candle> initialCandles)
+        public void AddCandles(IEnumerable<Candle> initialCandles)
         {
             var sortedCandles = initialCandles.OrderBy(x => x.Timestamp).ToList();
             if (!sortedCandles.Any())
@@ -508,9 +507,7 @@
             {
                 if ((candle.Timestamp - previousCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception(string.Format("The list of candles do not follow the sequence: {1} to {1}",
-                        previousCandle.Timestamp,
-                        candle.Timestamp));
+                    throw new Exception($"The list of candles do not follow the sequence: {previousCandle.Timestamp} to {candle.Timestamp}");
                 }
                 previousCandle = candle;
             }
@@ -601,27 +598,29 @@
 
             var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
 
+            if (previousCandle == null)
+            {
+                return false;                
+            }
+
             if (previousCandle.IsReversal(GetThreshold()))
             {
                 return false;
             }
 
-            if (!ConfirmPreviousCandleForBid(previousCandle, currentCandle))
+            if (ConfirmPreviousCandleForBid(previousCandle, currentCandle))
             {
-                previousCandle = this.candles.TakeLast(3).Skip(2)
-                    .FirstOrDefault();
-                if (previousCandle.IsReversal(GetThreshold()))
-                {
-                    return false;
-                }
-
-                if (!ConfirmPreviousCandleForBid(previousCandle, currentCandle))
-                {
-                    return false;
-                }
+                return true;
             }
 
-            return true;
+            previousCandle = this.candles.TakeLast(3).Skip(2).FirstOrDefault();
+
+            if (previousCandle == null)
+            {
+                return false;
+            }
+
+            return ConfirmPreviousCandleForBid(previousCandle, currentCandle);
         }
 
         private void PlaceOrder(string side, Rate rate)
@@ -694,7 +693,7 @@
         private bool ValidateIndicatorsState(Rate currentRate)
         {
             return
-                this.candles.Count() >= MinNbOfCandles
+                this.candles.Count >= MinNbOfCandles
                 && (this.candles.Last().Timestamp - currentRate.Time).Minutes <= this.PeriodInMinutes;
         }
 
