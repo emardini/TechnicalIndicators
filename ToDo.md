@@ -66,5 +66,5 @@
 *   Check workflow to verify is it is needed to close a position in case of anomaly
 *   Check workflow to verify is it is needed to close a position in case of anomaly
 *   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
-*   Develop a mean reversion strategy
+*   Develop a mean reversion strategy (https://www.quantopian.com/posts/trading-strategy-mean-reversion, https://www.dukascopy.com/fxcomm/fx-article-contest/?Mean-Reversion-Trading-Strategy=&action=read&id=2503&language=en)
 *   Decide on how to share the balance between several strategies
