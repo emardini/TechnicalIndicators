@@ -1,19 +1,24 @@
 *	~~Check halted state~~
+*   Modify get candles to get candles between dates
+*   Save candle data to database using days, hours, 15, 5, 1 minute and 5 seconds
+*   Modify backtester to separate from rates adapter
+*   Use backtester to identify issues with slow entries
+*   Need to know how long it takes to evaluate a rate and improve performance
 *   ~~Build job for GPBUSD and USDJPY~~
 *   	~~Build job for USDCHF~~
-*   Start transactions if ADX > 35, even if it is not increasing?
+*   Start transactions if ADX > 25, even if it is not increasing?
 *   Put stop loss two more pips above the minimum
 *   When calculating position size, decrease the risk amount using the spread taking into account that in case of a stop, the stop is calculated with the same price the order as placed and not with the opposite price. 
 *   Add agents for 30 and 60 minutes on the four pairs: 8 more agents and accounts
 *       ~~In mondays take the candles from friday~~
 *   The decision on closing or modify order depends on new candles, but when there is an open trade, there are no new candles, should modify the procedure to get candles first and then handle the open trade. it will be necesary now to decide what to do if no new candles or prices are coming
-*   ~~In mondays take the candles from friday
-*   ~~Check why the job was stuck in getting candles
+*   ~~In mondays take the candles from friday~~
+*   ~~Check why the job was stuck in getting candles~~
 *   Investigate why the risk strategy allowed for a loss bigger than the max risk
 *       ~~Check why the job was stuck in getting candles~~
 *   ~~Investigate why the risk strategy allowed for a loss bigger than the max risk~~
 *   Investigate using RSI, Stochastic, MACD to spot/confirm trend
-*   Dump all the algorith state before exiting the check, including instrument, adx, moving averages and any other reason causing exit without issuing transaction
+*   Dump all the algorithm state before exiting the check, including instrument, adx, moving averages and any other reason causing exit without issuing transaction
 *   Look for an option to Oanda to keep alternatives open
 *   Hide connection strings and azure settings and put it in configuration
 *   ~~Need to allow for a job to execute if there is an open order~~
@@ -25,10 +30,11 @@
 	*	~~Prevent adding repeated candles~~
 	*	~~Complete missing candles~~
 *	Compare adx calculation against other systems: in progress, seems good with visual inspection
-*	Add retries
+*	Add retries to get values or execute orders
 *	Expose configuration
 	*	Enable/disable auto transactions
-	*   Set history to calculate adx direction in app config
+	*       Stop/start agent
+	*   Set history to calculate adx direction in app config or check if we want to check direction
 	*   Azure credentials
 	*   Oanda Credentials
 	*   Rate period
@@ -55,8 +61,10 @@
 *	~~Implement function to calculate the period based on the values passed by parameter~~
 *   ~~Check candles lagging behind in live account~~
 *   Handle error on leverage and insuficient funds, maybe limiting the position size or stop los size (minimum size)
-*   ~~Verify that the candles are not lagging behind as we do with rates
+*   ~~Verify that the candles are not lagging behind as we do with rates~~
 *   ~~Verify that the candles are not lagging behind as we do with rates~~
 *   Check workflow to verify is it is needed to close a position in case of anomaly
 *   Check workflow to verify is it is needed to close a position in case of anomaly
 *   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
+*   Develop a mean reversion strategy
+*   Decide on how to share the balance between several strategies
