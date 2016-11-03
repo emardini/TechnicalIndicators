@@ -28,22 +28,22 @@
         {
             if (open < 0)
             {
-                throw new ArgumentOutOfRangeException("open", "Cannot be negative");
+                throw new ArgumentOutOfRangeException(nameof(open), "Cannot be negative");
             }
 
             if (close < 0)
             {
-                throw new ArgumentOutOfRangeException("close", "Cannot be negative");
+                throw new ArgumentOutOfRangeException(nameof(close), "Cannot be negative");
             }
 
             if (high < 0)
             {
-                throw new ArgumentOutOfRangeException("high", "Cannot be negative");
+                throw new ArgumentOutOfRangeException(nameof(high), "Cannot be negative");
             }
 
             if (low < 0)
             {
-                throw new ArgumentOutOfRangeException("low", "Cannot be negative");
+                throw new ArgumentOutOfRangeException(nameof(low), "Cannot be negative");
             }
 
             if (low > high)
@@ -126,7 +126,7 @@
         {
             if (threshold == null)
             {
-                throw new ArgumentNullException("threshold");
+                throw new ArgumentNullException(nameof(threshold));
             }
 
             return (Math.Abs(this.Close - this.Open) <= threshold.Delta);

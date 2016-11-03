@@ -51,6 +51,8 @@
 
         private readonly Ema fastEmaLow;
 
+        private readonly bool isbacktesting;
+
         private readonly IRateProvider rateProvider;
 
         private readonly Sma slowSmaHigh;
@@ -73,7 +75,8 @@
             int periodInMinutes,
             ITradingAdapter tradingAdapter,
             IRateProvider rateProvider,
-            int accountId)
+            int accountId,
+            bool isbacktesting = false)
         {
             if (adx == null)
             {
@@ -122,6 +125,7 @@
             this.tradingAdapter = tradingAdapter;
             this.rateProvider = rateProvider;
             this.AccountId = accountId;
+            this.isbacktesting = isbacktesting;
             this.PeriodInMinutes = periodInMinutes;
 
             var initialCandles = rateProvider.GetLastCandles(instrument, periodInMinutes, MinNbOfCandles).ToList();
@@ -156,30 +160,28 @@
 
         #region Public Methods and Operators
 
-        private void AddCandle(Candle newCandle)
+        public void AddCandles(IEnumerable<Candle> initialCandles)
         {
-            if (this.candles.Any(x => x.Timestamp == newCandle.Timestamp))
+            var sortedCandles = initialCandles.OrderBy(x => x.Timestamp).ToList();
+            if (!sortedCandles.Any())
             {
                 return;
             }
 
-            var lastCandle = this.candles.LastOrDefault();
-            if (lastCandle != null)
+            var previousCandle = sortedCandles.First();
+            foreach (var candle in sortedCandles.Skip(1))
             {
-                if ((newCandle.Timestamp - lastCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
+                if ((candle.Timestamp - previousCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception(string.Format("The list of candles do not follow the sequence: {0} to {2}",
-                        lastCandle.Timestamp,
-                        newCandle.Timestamp));
+                    throw new Exception($"The list of candles do not follow the sequence: {previousCandle.Timestamp} to {candle.Timestamp}");
                 }
+                previousCandle = candle;
             }
 
-            this.candles.Add(newCandle);
-            this.adx.Add(newCandle);
-            this.fastEmaHigh.Add(newCandle.High);
-            this.fastEmaLow.Add(newCandle.Low);
-            this.slowSmaHigh.Add(newCandle.High);
-            this.slowSmaLow.Add(newCandle.Low);
+            foreach (var candle in sortedCandles)
+            {
+                this.AddCandle(candle);
+            }
         }
 
         //Return structure containig reason why cannot go long to improve testability
@@ -266,10 +268,13 @@
 
             Trace.TraceInformation("New rate : {0}", JsonConvert.SerializeObject(newRate));
 
-            var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time.ToUniversalTime();
-            if (systemTimeDiff.TotalMinutes >= MaxRateStaleTime)
+            if (!this.isbacktesting)
             {
-                validations.AddErrorMessage("Price timer lagging behind current time");
+                var systemTimeDiff = this.dateProvider.GetCurrentUtcDate() - newRate.Time.ToUniversalTime();
+                if (systemTimeDiff.TotalMinutes >= MaxRateStaleTime)
+                {
+                    validations.AddErrorMessage("Price timer lagging behind current time");
+                }
             }
 
             if (!this.ValidateIndicatorsState(newRate))
@@ -344,7 +349,7 @@
             //    return;
             //}
 
-            var currentSpread = Math.Abs(newRate.Ask - newRate.Bid);
+            var currentSpread = Math.Abs(newRate.Ask - newRate.Bid) * (1.00m / GetPipFraction(newRate.QuoteCurrency));
             if (currentSpread > MaxSpread)
             {
                 Trace.TraceInformation($"Not enough liquidity, spread = {currentSpread}");
@@ -391,7 +396,7 @@
 
             var newRate = this.rateProvider.GetRate(this.Instrument);
 
-            var lastCandle = this.candles.OrderByDescending(x => x.Timestamp).FirstOrDefault();           
+            var lastCandle = this.candles.OrderByDescending(x => x.Timestamp).FirstOrDefault();
             var nbOfRequiredCandles = 1;
 
             if (lastCandle != null)
@@ -494,28 +499,30 @@
             return new Threshold { Body = 0.1m, Delta = 0.0003m };
         }
 
-        public void AddCandles(IEnumerable<Candle> initialCandles)
+        private void AddCandle(Candle newCandle)
         {
-            var sortedCandles = initialCandles.OrderBy(x => x.Timestamp).ToList();
-            if (!sortedCandles.Any())
+            if (this.candles.Any(x => x.Timestamp == newCandle.Timestamp))
             {
                 return;
             }
 
-            var previousCandle = sortedCandles.First();
-            foreach (var candle in sortedCandles.Skip(1))
+            var lastCandle = this.candles.LastOrDefault();
+            if (lastCandle != null)
             {
-                if ((candle.Timestamp - previousCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
+                if ((newCandle.Timestamp - lastCandle.Timestamp).Minutes % this.PeriodInMinutes > 0)
                 {
-                    throw new Exception($"The list of candles do not follow the sequence: {previousCandle.Timestamp} to {candle.Timestamp}");
+                    throw new Exception(string.Format("The list of candles do not follow the sequence: {0} to {2}",
+                        lastCandle.Timestamp,
+                        newCandle.Timestamp));
                 }
-                previousCandle = candle;
             }
 
-            foreach (var candle in sortedCandles)
-            {
-                this.AddCandle(candle);
-            }
+            this.candles.Add(newCandle);
+            this.adx.Add(newCandle);
+            this.fastEmaHigh.Add(newCandle.High);
+            this.fastEmaLow.Add(newCandle.Low);
+            this.slowSmaHigh.Add(newCandle.High);
+            this.slowSmaLow.Add(newCandle.Low);
         }
 
         private int CalculatePositionSize(decimal stopLoss, string side, Rate currentRate)
@@ -600,7 +607,7 @@
 
             if (previousCandle == null)
             {
-                return false;                
+                return false;
             }
 
             if (previousCandle.IsReversal(GetThreshold()))

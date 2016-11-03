@@ -30,7 +30,7 @@ namespace TechnicalIndicators
         {
             if (period > MaxPeriod)
             {
-                throw new ArgumentOutOfRangeException("period", string.Format("The max allowed value is {0}", MaxPeriod));
+                throw new ArgumentOutOfRangeException(nameof(period), $"The max allowed value is {MaxPeriod}");
             }
 
             this.period = period;

@@ -34,7 +34,7 @@
             }
             catch (Exception ex)
             {
-                Trace.TraceError(string.Format("Error at {0}: {1}", "GBBPUSD", ex.ToString()));
+                Trace.TraceError($"Error at {"GBBPUSD"}: {ex}");
             }          
         }
 

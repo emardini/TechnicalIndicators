@@ -34,7 +34,7 @@
             }
             catch (Exception ex)
             {
-                Trace.TraceError(string.Format("Error at {0}: {1}", "USDCHF", ex.ToString()));
+                Trace.TraceError($"Error at {"USDCHF"}: {ex}");
             }          
         }
 

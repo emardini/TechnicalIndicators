@@ -26,7 +26,7 @@ namespace System.Cobra
         {
             if (string.IsNullOrEmpty(message))
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
 
             if (!errorMessages.Any(x => x.Equals(message, StringComparison.OrdinalIgnoreCase))) {
@@ -36,7 +36,7 @@ namespace System.Cobra
 
         public override string ToString()
         {
-            return string.Format("IsValid:{0}, ErrorMessages:[{1}]", this.IsValid, string.Join(",", this.ErrorMessages));
+            return $"IsValid:{this.IsValid}, ErrorMessages:[{string.Join(",", this.ErrorMessages)}]";
         }
     }
 }

@@ -58,12 +58,12 @@
         {
             if (historicalCandles == null)
             {
-                throw new ArgumentNullException("historicalCandles");
+                throw new ArgumentNullException(nameof(historicalCandles));
             }
 
             if (ticksInPeriod <= 0)
             {
-                throw new ArgumentException("ticksInPeriod has to be greater than zero", "ticksInPeriod");
+                throw new ArgumentException("ticksInPeriod has to be greater than zero", nameof(ticksInPeriod));
             }
 
             this.ticksInPeriod = ticksInPeriod;
@@ -72,7 +72,7 @@
 
             if (this.historicalCandles.Count() < 10)
             {
-                throw new ArgumentException("historicalCandles has to be contain at least 10 elements", "historicalCandles");
+                throw new ArgumentException("historicalCandles has to be contain at least 10 elements", nameof(historicalCandles));
             }
 
             var startCandle = this.historicalCandles.OrderByDescending(x => x.Timestamp).FirstOrDefault(x => x.Timestamp <= startDate);

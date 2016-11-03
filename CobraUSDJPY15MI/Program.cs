@@ -1,4 +1,4 @@
-﻿namespace CobraUSDJPY15MI
+﻿namespace CobraUSDJPY5MI
 {
     using System;
     using System.Cobra;
@@ -11,7 +11,7 @@
     using Ninject;
 
     using TechnicalIndicators;
-
+    using System.Configuration;
     // To learn more about Microsoft Azure WebJobs SDK, please see http://go.microsoft.com/fwlink/?LinkID=320976
     internal class Program
     {
@@ -21,12 +21,16 @@
         {
             var container = new StandardKernel();
 
+            var token = ConfigurationManager.AppSettings["TOKEN"];
+            var account = ConfigurationManager.AppSettings["ACCOUNT_USD_JPY"].SafeParseInt().GetValueOrDefault();
+
+
             var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/labs/v1/",
-              "e304a4993098ea24bd717ab8450db9ed-497a48f0af517ebcb7dd6cc93dae4f49");
+              token);
 
             container.Bind<Cobra>()
                 .ToConstant(new Cobra(new Adx(14),
@@ -39,7 +43,7 @@
                     15,
                     adapter,
                     adapter,
-                    7963842))
+                    account))
                 .InSingletonScope();
 
             container.Bind<IRateProvider>()

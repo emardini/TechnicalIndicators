@@ -73,7 +73,7 @@
             instrument = instrument.Trim();
             if (instrument.Length != MinInstrumentLenght)
             {
-                throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
+                throw new ArgumentException($"Invalid instrument {instrument}");
             }
 
             List<Candle> candles;
@@ -193,7 +193,7 @@
                     { "side", order.Side },
                     { "type", order.OrderType },
                     { "stopLoss", order.StopLoss.ToString(CultureInfo.InvariantCulture) },
-                    { "trailingStop", string.Format("{0:0.0}", order.TrailingStop) }
+                    { "trailingStop", $"{order.TrailingStop:0.0}" }
                 }).Result;
         }
 
@@ -266,7 +266,7 @@
             instrument = instrument.Trim();
             if (instrument.Length != MinInstrumentLenght)
             {
-                throw new ArgumentException(string.Format("Invalid instrument {0}", instrument));
+                throw new ArgumentException($"Invalid instrument {instrument}");
             }
 
             var instrumentPar = GetInstrument(instrument);

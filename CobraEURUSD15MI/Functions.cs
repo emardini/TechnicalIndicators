@@ -16,7 +16,7 @@
         {
             if (tradingSystem == null)
             {
-                throw new ArgumentNullException("system");
+                throw new ArgumentNullException(nameof(tradingSystem));
             }
 
             this.tradingSystem = tradingSystem;
@@ -24,7 +24,7 @@
 
         #endregion
 
-        [Singleton(Mode = SingletonMode.Listener)]
+        //[Singleton(Mode = SingletonMode.Listener)]
         #region Public Methods and Operators
         public void CheckRatesCobraEURUSD([TimerTrigger("0 */1 * * * MON,TUE,WED,THU,FRI", RunOnStartup = true)] TimerInfo timer)
         {
@@ -34,7 +34,7 @@
             }
             catch (Exception ex)
             {
-                Trace.TraceError(string.Format("Error at {0}: {1}", "EURUSD", ex.ToString()));
+                Trace.TraceError($"Error at {"EURUSD"}: {ex}");
             }          
         }
 

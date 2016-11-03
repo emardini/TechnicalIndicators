@@ -29,8 +29,8 @@
         private static void Main(string[] args)
         {
             const string Instrument = "EUR_USD";
-            const int periodInMinutes = 10;
-            var accountKey = "qqqqq";
+            const int periodInMinutes = 15;
+            var accountKey = "87f512402de68d8d811012662ad1c6a3-ded8ade36d14d6e042615865f07ccc66";
             var ratesProvider = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",
@@ -38,7 +38,7 @@
                 "https://api-fxpractice.oanda.com/labs/v1/",
                 accountKey);
 
-            var candles = ratesProvider.GetLastCandles(Instrument, periodInMinutes, 1000).ToList();
+            var candles = ratesProvider.GetLastCandles(Instrument, periodInMinutes, 500).ToList();
             var backTestAdapter = new HistoricalBackTestAdapter("https://api-fxpractice.oanda.com/v1/",
                 "https://api-fxpractice.oanda.com/v1/",
                 "https://stream-fxpractice.oanda.com/v1/",
@@ -49,6 +49,8 @@
                 candles,
                 candles.OrderBy(x => x.Timestamp).First().Timestamp);
 
+
+            var ticks = ratesProvider.GetLastCandles(Instrument, 1, 4999).ToList();
             backTestAdapter.Reset();
             var system = new Cobra(new Adx(14),
                 new Ema(12),
@@ -60,11 +62,18 @@
                 periodInMinutes,
                 backTestAdapter,
                 backTestAdapter,
-                0000);
+                0000, true);
 
-            for (var i = 0; i < candles.Count() * 5; i++)
+            var initialCandles = candles.Take(72).ToList();
+            system.AddCandles(initialCandles);
+            foreach (var tick in ticks.Where(x=> x.Timestamp >= initialCandles.Last().Timestamp))
             {
-                system.CheckRate();
+                var candle = candles.FirstOrDefault(x => tick.Timestamp >= x.Timestamp && tick.Timestamp < x.Timestamp.AddMinutes(periodInMinutes));
+                if (candle != null)
+                {
+                    system.AddCandles(new List<Candle> {candle});
+                }
+                system.CheckRate(new Rate() {Bid = tick.FullRange/2.0m + 0.0001m, Ask = tick.FullRange / 2.0m - 0.0001m, Instrument = Instrument, Time = tick.Timestamp});
             }
 
             Console.ReadKey();

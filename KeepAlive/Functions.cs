@@ -24,7 +24,7 @@
             var webjobNames = new List<string> { "CobraEURUSD15MI", "CobraUSDJPY15MI", "CobraGBPUSD15MI", "CobraUSDCHF15MI" };
             foreach (var webJobName in webjobNames)
             {
-                var webjobUrl = string.Format("https://{0}.scm.azurewebsites.net/api/continuouswebjobs/{1}/start", WebsiteName, webJobName);
+                var webjobUrl = $"https://{WebsiteName}.scm.azurewebsites.net/api/continuouswebjobs/{webJobName}/start";
 
                 var client = new HttpClient();
                 var auth = "Basic "
