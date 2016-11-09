@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Cobra.Tests", "Syste
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrokerAdapter.Oanda", "BrokerAdapter.Oanda\BrokerAdapter.Oanda.csproj", "{3B8F638C-BBFB-4831-8530-FA309CECD770}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OANDARestLibrary", "..\rest-csharp-refimpl-emardini\Reference Implementation\OANDARestLibrary\OANDARestLibrary.csproj", "{22F134F0-E5A3-496A-BE6B-75680F014388}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrokerAdapter.BackTest", "BrokerAdapter.BackTest\BrokerAdapter.BackTest.csproj", "{B5DE66D1-BC10-4F21-B35D-D59532D08390}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackTestAdapterConsole", "BackTestAdapterConsole\BackTestAdapterConsole.csproj", "{CA37DF97-D246-4149-A879-E8C9D3C5D4FF}"
@@ -47,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraEURUSD15MI", "CobraEUR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobraUSDCHF15MI", "CobraUSDCHF15MI\CobraUSDCHF15MI.csproj", "{EC231F9D-E358-4F5D-A313-7713B2DE61E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OANDARestLibrary", "OANDARestLibrary\OANDARestLibrary.csproj", "{22F134F0-E5A3-496A-BE6B-75680F014388}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,10 +73,6 @@ Global
 		{3B8F638C-BBFB-4831-8530-FA309CECD770}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B8F638C-BBFB-4831-8530-FA309CECD770}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B8F638C-BBFB-4831-8530-FA309CECD770}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22F134F0-E5A3-496A-BE6B-75680F014388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{22F134F0-E5A3-496A-BE6B-75680F014388}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{22F134F0-E5A3-496A-BE6B-75680F014388}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{22F134F0-E5A3-496A-BE6B-75680F014388}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5DE66D1-BC10-4F21-B35D-D59532D08390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5DE66D1-BC10-4F21-B35D-D59532D08390}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5DE66D1-BC10-4F21-B35D-D59532D08390}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -105,6 +101,10 @@ Global
 		{EC231F9D-E358-4F5D-A313-7713B2DE61E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC231F9D-E358-4F5D-A313-7713B2DE61E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC231F9D-E358-4F5D-A313-7713B2DE61E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22F134F0-E5A3-496A-BE6B-75680F014388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22F134F0-E5A3-496A-BE6B-75680F014388}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22F134F0-E5A3-496A-BE6B-75680F014388}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22F134F0-E5A3-496A-BE6B-75680F014388}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

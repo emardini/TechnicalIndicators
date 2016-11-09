@@ -28,7 +28,7 @@
 
         private string accountCurrency;
 
-        private string accountId;
+        private int accountId;
 
         private string accountName;
 
@@ -61,7 +61,7 @@
                 this.HasAccountCurrency = true;
             }
         }
-        public string AccountId
+        public int AccountId
         {
             get { return this.accountId; }
             set

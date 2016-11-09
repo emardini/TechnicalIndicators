@@ -75,7 +75,7 @@
             int periodInMinutes,
             ITradingAdapter tradingAdapter,
             IRateProvider rateProvider,
-            string accountId,
+            int accountId,
             bool isbacktesting = false)
         {
             if (adx == null)

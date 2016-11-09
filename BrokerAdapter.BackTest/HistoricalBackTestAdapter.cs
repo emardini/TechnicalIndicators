@@ -87,28 +87,28 @@
 
         #region Public Methods and Operators
 
-        public override void CloseTrade(string accountId, long tradeId)
-        {
-            var gainLoss = 0m;
-            if (this.currentTrade.Side == OrderSideBuy)
-            {
-                var amountToCompare = this.CurrentRate.Bid;
-                gainLoss = (amountToCompare - this.currentTrade.Price) / DolarsByPip;
-                Console.WriteLine("Close Order =>Gain/Loss={0}", gainLoss);
-                this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
-                Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
-                this.currentTrade = null;
-            }
-            else
-            {
-                var amountToCompare = this.CurrentRate.Ask;
-                gainLoss = (this.currentTrade.Price - amountToCompare) / DolarsByPip;
-                Console.WriteLine("Close order=>Gain/Loss={0}", gainLoss);
-                this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
-                Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
-                this.currentTrade = null;
-            }
-        }
+        //public override void CloseTrade(string accountId, long tradeId)
+        //{
+        //    var gainLoss = 0m;
+        //    if (this.currentTrade.Side == OrderSideBuy)
+        //    {
+        //        var amountToCompare = this.CurrentRate.Bid;
+        //        gainLoss = (amountToCompare - this.currentTrade.Price) / DolarsByPip;
+        //        Console.WriteLine("Close Order =>Gain/Loss={0}", gainLoss);
+        //        this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
+        //        Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
+        //        this.currentTrade = null;
+        //    }
+        //    else
+        //    {
+        //        var amountToCompare = this.CurrentRate.Ask;
+        //        gainLoss = (this.currentTrade.Price - amountToCompare) / DolarsByPip;
+        //        Console.WriteLine("Close order=>Gain/Loss={0}", gainLoss);
+        //        this.balancePips += gainLoss * this.currentTrade.Units * DolarsByPip;
+        //        Console.WriteLine("{1} - Balance = {0}", this.balancePips, this.currentTrade.Time);
+        //        this.currentTrade = null;
+        //    }
+        //}
 
         public override Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
         {
@@ -122,11 +122,6 @@
                 : this.historicalCandles.Where(x => x.Timestamp <= this.startDate).OrderByDescending(x => x.Timestamp).Take(nbOfCandles);
 
             return result.OrderBy(x => x.Timestamp);
-        }
-
-        public override Trade GetOpenTrade(string accountId)
-        {
-            return this.currentTrade;
         }
 
         public override Rate GetRate(string instrument)
@@ -214,15 +209,15 @@
             return this.CurrentRate;
         }
 
-        public override bool HasOpenOrder(string accountId)
-        {
-            return this.currentTrade != null;
-        }
+        //public override bool HasOpenOrder(string accountId)
+        //{
+        //    return this.currentTrade != null;
+        //}
 
-        public override bool HasOpenTrade(string accountId)
-        {
-            return this.HasOpenOrder(accountId);
-        }
+        //public override bool HasOpenTrade(string accountId)
+        //{
+        //    return this.HasOpenOrder(accountId);
+        //}
 
         public override bool IsInstrumentHalted(string instrument)
         {

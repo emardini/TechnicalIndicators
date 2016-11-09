@@ -62,7 +62,7 @@
                 periodInMinutes,
                 backTestAdapter,
                 backTestAdapter,
-                "0000",
+                0,
                 true);
 
             var initialCandles = candles.Take(72).ToList();
