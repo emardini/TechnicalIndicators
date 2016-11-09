@@ -149,3 +149,10 @@ soap
 *.bak
 *.csv
 .vs
+*.config
+*.pubxml
+/CobraEURUSD15MI/*.pfx
+*.pfx
+/PublishScripts/Templates
+*.ps1
+/PublishScripts/Scripts
