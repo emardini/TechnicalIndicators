@@ -36,7 +36,7 @@ namespace TechnicalIndicators
 
         public int Units { get; set; }
 
-        public int AccountId { get; set; }
+        public string AccountId { get; set; }
 
         #endregion
     }

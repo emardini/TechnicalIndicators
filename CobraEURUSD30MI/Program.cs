@@ -1,4 +1,4 @@
-﻿namespace CobraEURUSD15MI
+﻿namespace CobraEURUSD30MI
 {
     using System;
     using System.Cobra;
@@ -23,9 +23,8 @@
             var container = new StandardKernel();
 
             var token = ConfigurationManager.AppSettings["TOKEN"];
-            var account = ConfigurationManager.AppSettings["ACCOUNT_EUR_USD"]; 
 
-            var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v1/",
+            var adapter = new OandaAdapter("https://api-fxpractice.oanda.com/v3/",
               "https://api-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
               "https://stream-fxpractice.oanda.com/v1/",
@@ -40,10 +39,10 @@
                     new Sma(72),
                     new SimpleDateProvider(),
                     "EUR_USD",
-                    15,
+                    30,
                     adapter,
                     adapter,
-                    account))
+                    "101-001-2773283-001"))
                 .InSingletonScope();
 
             container.Bind<IRateProvider>()
