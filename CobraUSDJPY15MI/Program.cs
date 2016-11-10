@@ -39,7 +39,7 @@
                     new Sma(72),
                     new Sma(72),
                     new SimpleDateProvider(),
-                    "USD_JPY",
+                    "GBP_JPY",
                     15,
                     adapter,
                     adapter,

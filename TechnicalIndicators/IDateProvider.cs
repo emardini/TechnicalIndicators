@@ -6,7 +6,7 @@
     {
         #region Public Methods and Operators
 
-        DateTime GetCurrentDate();
+        DateTime GetCurrentEastDateTimeDate();
 
         #endregion
 

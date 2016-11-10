@@ -25,7 +25,7 @@
 
         private const int MaxRateStaleTime = 2;
 
-        private const decimal MaxSpread = 3.00m;
+        private const decimal MaxSpread = 4.5m;
 
         private const int MinNbOfCandles = 72;
 
@@ -223,7 +223,7 @@
 
             var previousCandle = this.candles.TakeLast(2).Skip(1).FirstOrDefault();
 
-            if (previousCandle.IsReversal(GetThreshold()))
+            if (previousCandle == null || previousCandle.IsReversal(GetThreshold()))
             {
                 return false;
             }
@@ -233,7 +233,7 @@
                 previousCandle = this.candles.TakeLast(3).Skip(2)
                     .FirstOrDefault();
 
-                if (previousCandle.IsReversal(GetThreshold()))
+                if (previousCandle == null || previousCandle.IsReversal(GetThreshold()))
                 {
                     return false;
                 }
@@ -343,11 +343,17 @@
                 return;
             }
 
-            //if (this.IsBannedDay())
-            //{
-            //    Trace.TraceInformation("Non trading day");
-            //    return;
-            //}
+            if (!this.IsTradingDay())
+            {
+                Trace.TraceInformation("Non trading day");
+                return;
+            }
+
+            if (!this.IsTradingTime())
+            {
+                Trace.TraceInformation("Non trading time");
+                return;
+            }
 
             var currentSpread = Math.Abs(newRate.Ask - newRate.Bid) * (1.00m / GetPipFraction(newRate.QuoteCurrency));
             if (currentSpread > MaxSpread)
@@ -457,12 +463,18 @@
             return currentCandle.Close > previousCandle.Close;
         }
 
-        public bool IsBannedDay()
+        public bool IsTradingDay()
         {
-            var currentDate = this.dateProvider.GetCurrentDate();
-            return currentDate.DayOfWeek == DayOfWeek.Friday
-                   || currentDate.DayOfWeek == DayOfWeek.Saturday
-                   || currentDate.DayOfWeek == DayOfWeek.Sunday;
+            var currentDate = this.dateProvider.GetCurrentEastDateTimeDate();
+            return currentDate.DayOfWeek != DayOfWeek.Friday
+                   && currentDate.DayOfWeek != DayOfWeek.Saturday
+                   && currentDate.DayOfWeek != DayOfWeek.Sunday;
+        }
+
+        public bool IsTradingTime()
+        {
+            var currentDate = this.dateProvider.GetCurrentEastDateTimeDate();
+            return currentDate.Hour >= 4 && currentDate.Hour <= 15;
         }
 
         #endregion

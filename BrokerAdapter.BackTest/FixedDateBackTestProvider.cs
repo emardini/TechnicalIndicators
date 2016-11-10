@@ -8,14 +8,14 @@
     {
         #region Public Methods and Operators
 
-        public DateTime GetCurrentDate()
+        public DateTime GetCurrentEastDateTimeDate()
         {
             return new DateTime(2016, 5, 11, 21, 0, 0);
         }
 
         public DateTime GetCurrentUtcDate()
         {
-            return this.GetCurrentDate();
+            return this.GetCurrentEastDateTimeDate();
         }
 
         #endregion

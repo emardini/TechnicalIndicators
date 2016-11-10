@@ -6,9 +6,9 @@
     {
         #region Public Methods and Operators
 
-        public DateTime GetCurrentDate()
+        public DateTime GetCurrentEastDateTimeDate()
         {
-            return DateTime.Now;
+            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Eastern Standard Time");
         }
 
         public DateTime GetCurrentUtcDate()
