@@ -14,15 +14,15 @@
 
         public string side { get; set; }
 
-        public double stopLoss { get; set; }
+        public decimal stopLoss { get; set; }
 
-        public double takeProfit { get; set; }
+        public decimal takeProfit { get; set; }
 
         public string time { get; set; }
 
-        public double trailingAmount { get; set; }
+        public decimal trailingAmount { get; set; }
 
-        public int trailingStop { get; set; }
+        public decimal trailingStop { get; set; }
 
         public int units { get; set; }
 
