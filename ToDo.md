@@ -1,5 +1,6 @@
 *	~~Check halted state~~
 *   Check why in big trends, the exit seems like not working
+*   Add max allowable spread and schedule constraints as a parameter
 *   Widen the exit using a bigger ema or adx below level or both
 *   Modify calculation of position sizing to have crosses with the account balance in USD, notice the pips values in the position are given by the second currency in the pair, in EURUSD, the pips are in USD.
 *   Modify get candles to get candles between dates
