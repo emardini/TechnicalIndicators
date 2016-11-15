@@ -1,5 +1,7 @@
 *	~~Check halted state~~
 *   Modify calculation of position sizing to have crosses with the account balance in USD
+*   Explore partially close positions that hits a certain target
+*   Open chance to trade an instrument if there is no current risk
 *   Modify get candles to get candles between dates
 *   Save candle data to database using days, hours, 15, 5, 1 minute and 5 seconds
 *   Modify backtester to separate from rates adapter

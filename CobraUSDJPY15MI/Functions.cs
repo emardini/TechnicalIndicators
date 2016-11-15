@@ -34,7 +34,7 @@
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Error at {"USDJPY"}: {ex}");
+                Trace.TraceError($"Error at {this.tradingSystem.Instrument}: {ex}");
             }          
         }
 

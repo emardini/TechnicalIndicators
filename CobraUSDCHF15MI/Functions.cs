@@ -34,7 +34,7 @@
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Error at {"USDCHF"}: {ex}");
+                Trace.TraceError($"Error at {this.tradingSystem.Instrument}: {ex}");
             }          
         }
 
