@@ -1,7 +1,11 @@
 *	~~Check halted state~~
 *   Find a way to select pairs to trade in a daily or weekly basis
 *   Modify calculation of position sizing to have crosses with the account balance in USD
-*   Using the ATR as a filter: The average range is also a good indicator to use for filtering out trades. Traders typically need volatility to make any money so if you have a system that generates lots of different signals, you can filter out those ones that are low in volatility by discarding those with a low ATR. Concentrating on markets with the highest ATRâ€™s mean you can trade the markets that are experiencing the most movement and therefore the most profit potential.
+*   Check why in big trends, the exit seems like not working
+*   Add max allowable spread and schedule constraints as a parameter
+*   Widen the exit using a bigger ema or adx below level or both
+*   Modify calculation of position sizing to have crosses with the account balance in USD, notice the pips values in the position are given by the second currency in the pair, in EURUSD, the pips are in USD.
+*   Using the ATR as a filter: The average range is also a good indicator to use for filtering out trades. Traders typically need volatility to make any money so if you have a system that generates lots of different signals, you can filter out those ones that are low in volatility by discarding those with a low ATR. Concentrating on markets with the highest ATR’s mean you can trade the markets that are experiencing the most movement and therefore the most profit potential.
 *   Explore partially close positions that hits a certain target
 *   Open chance to trade an instrument if there is no current risk
 *   Save candle data to database using days, hours, 15, 5, 1 minute and 5 seconds
