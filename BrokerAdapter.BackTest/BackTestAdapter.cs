@@ -6,43 +6,23 @@
 
     using TechnicalIndicators;
 
-    public class BackTestAdapter : IRateProvider, ITradingAdapter
+    public class BackTestAdapter : ITradingAdapter
     {
         #region Constants
 
-        private const int CandlePeriod = 10;
+        private const decimal DolarsByPip = 0.0001m;
 
-        private const decimal DolarByPip = 0.0001m;
-
-        private const int MaxCandleRange = 40;
-
-        private const int MaxNbOfDownCandles = 50;
-
-        private const int MaxNbOfUpCandles = 300;
+        private const string OrderSideBuy = "buy";
 
         #endregion
 
         #region Fields
 
-        private readonly IEnumerable<Candle> candles;
+        private readonly AccountInformation accountInformation = new AccountInformation();
 
-        private readonly Random randomRateGenerator = new Random();
+        private readonly List<Trade> trades = new List<Trade>();
 
-        private int currentCandleIndex;
-
-        private bool hasOpenOrder;
-
-        private bool hasOpenTrade;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        public BackTestAdapter()
-        {
-            this.candles = this.GetCandles();
-            this.currentCandleIndex = 0;
-        }
+        private decimal balancePips;
 
         #endregion
 
@@ -50,129 +30,135 @@
 
         public void CloseTrade(int accountId, long tradeId)
         {
-            this.hasOpenOrder = false;
-            this.hasOpenTrade = false;
+            //TODO : CALCULATE NEW BALANCE
+            this.trades.RemoveAll(x => x.Id == tradeId && x.AccountId == accountId);
         }
 
         public AccountInformation GetAccountInformation(int accountId)
         {
-            return new AccountInformation { Balance = "10000" };
+            //TODO: Return a copy
+            return this.accountInformation;
         }
 
-        public Candle GetLastCandle(string instrument, int periodInMinutes, DateTime? endDateTime = null)
+        public Trade GetOpenTrade(int accountId, string instrument = null)
         {
-            return this.GetLastCandles(instrument, periodInMinutes, 1, endDateTime).FirstOrDefault();
+            return this.trades.FirstOrDefault(x => x.AccountId == accountId && (instrument == null || x.Instrument == instrument));
         }
 
-        public IEnumerable<Candle> GetLastCandles(string instrument, int periodInMinutes, int nbOfCandles, DateTime? endDateTime = null)
+        public bool HasOpenOrder(int accountId, string instrument = null)
         {
-            var sortedCandles = this.candles.OrderBy(x => x.Timestamp);
-            var filteredCandles = endDateTime.HasValue ? sortedCandles.Where(x => x.Timestamp <= endDateTime) : sortedCandles;
-            return filteredCandles.TakeLast(nbOfCandles);
-        }
-
-        public Trade GetOpenTrade(int accountId)
-        {
-            return new Trade();
-        }
-
-        public Rate GetRate(string instrument)
-        {
-            const int TotalNbOfCandles = MaxNbOfUpCandles + MaxNbOfDownCandles;
-            var nextCandleIndex = this.currentCandleIndex++;
-            if (nextCandleIndex >= TotalNbOfCandles)
-            {
-                nextCandleIndex = 0;
-            }
-
-            var nextCandle = this.candles.Skip(nextCandleIndex).Take(1).FirstOrDefault();
-
-            var rateValue = nextCandle.High;
-            var timestamp =
-                nextCandle.Timestamp.AddMinutes(this.randomRateGenerator.Next(1, CandlePeriod - 1)).AddSeconds(this.randomRateGenerator.Next(1, 59));
-
-            return new Rate { Ask = rateValue, Bid = rateValue, Instrument = instrument, Time = timestamp };
-        }
-
-        public bool HasOpenOrder(int accountId)
-        {
-            return this.hasOpenOrder;
-        }
-
-        public bool HasOpenTrade(int accountId)
-        {
-            return this.hasOpenTrade;
-        }
-
-        public bool IsInstrumentHalted(string instrument)
-        {
+            //EXECUTION IS IMMEDIATE
             return false;
+        }
+
+        public bool HasOpenTrade(int accountId, string instrument = null)
+        {
+            return this.trades.Any(x => x.AccountId == accountId && (instrument == null || x.Instrument == instrument));
         }
 
         public void PlaceOrder(Order order)
         {
-            this.hasOpenOrder = true;
-            this.hasOpenTrade = true;
+            this.trades.Add(new Trade
+            {
+                AccountId = order.AcountId,
+                Instrument = order.Instrument,
+                Id = this.trades.Count + 1,
+                Price = order.Price, //Slippage model
+                Side = order.Side,
+                StopLoss = order.StopLoss,
+                TakeProfit = order.TakeProfit,
+                Time = order.Timestamp,
+                TrailingStop = order.TrailingStop,
+                Units = order.Units
+            });
         }
 
-        public void Reset()
+        public void SetRate(Rate newRate)
         {
-            this.currentCandleIndex = 0;
+            //TODO: Calculate pip fraction to support YEN
+            //TODO: Update balance
+            //TODO: Check margin call
+            //TODO: Handle error on leverage and insuficient funds
+
+            var currentTrade = this.trades.FirstOrDefault();
+            if (currentTrade == null)
+            {
+                return;
+            }
+
+            decimal amountToCompare;
+            if (currentTrade.Side == OrderSideBuy)
+            {
+                if (currentTrade.TrailingStop > 0)
+                {
+                    var newTrailingAmount = newRate.Bid - currentTrade.TrailingStop * 0.0001m;
+
+                    currentTrade.TrailingAmount = newTrailingAmount >= currentTrade.TrailingAmount
+                        ? newTrailingAmount
+                        : currentTrade.TrailingAmount;
+                    amountToCompare = currentTrade.TrailingAmount;
+                }
+                else
+                {
+                    currentTrade.TrailingAmount = 0;
+                    amountToCompare = currentTrade.StopLoss;
+                }
+            }
+            else
+            {
+                if (currentTrade.TrailingStop > 0)
+                {
+                    var newTrailingAmount = newRate.Ask + currentTrade.TrailingStop * 0.0001m;
+                    currentTrade.TrailingAmount = newTrailingAmount < currentTrade.TrailingAmount
+                        ? newTrailingAmount
+                        : currentTrade.TrailingAmount;
+                    amountToCompare = currentTrade.TrailingAmount;
+                }
+                else
+                {
+                    currentTrade.TrailingAmount = 0;
+                    amountToCompare = currentTrade.StopLoss;
+                }
+            }
+
+            var gainLoss = 0m;
+            if (currentTrade.Side == OrderSideBuy)
+            {
+                if (newRate.Bid >= amountToCompare) return;
+
+                gainLoss = (currentTrade.Price - amountToCompare) / DolarsByPip;
+                Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
+                this.balancePips += gainLoss * currentTrade.Units * DolarsByPip;
+                Console.WriteLine("{1} - Balance = {0}", this.balancePips, currentTrade.Time);
+                this.trades.Remove(currentTrade);
+            }
+            else
+            {
+                if (newRate.Ask <= amountToCompare) return;
+
+                gainLoss = (amountToCompare - currentTrade.Price) / DolarsByPip;
+                Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
+                this.balancePips += gainLoss * currentTrade.Units * DolarsByPip;
+                Console.WriteLine("{1} - Balance = {0}", this.balancePips, currentTrade.Time);
+                this.trades.Remove(currentTrade);
+            }
         }
 
         public void UpdateTrade(Trade updatedTrade)
         {
+            var trade = this.trades.FirstOrDefault(x => x.Id == updatedTrade.Id);
+            if (trade == null)
+            {
+                throw new Exception($"No such trade with Id = {updatedTrade.Id}");
+            }
+
+            trade.StopLoss = updatedTrade.StopLoss;
+            trade.TakeProfit = updatedTrade.TakeProfit;
+            trade.TrailingAmount = updatedTrade.TrailingAmount;
         }
 
         #endregion
 
-        #region Methods
-
-        private IEnumerable<Candle> GetCandles()
-        {
-            var startDate = DateTime.Now.AddMinutes(-MaxNbOfUpCandles * CandlePeriod);
-            var tenthsOfMinutes = (startDate.Minute / CandlePeriod);
-            startDate =
-                new DateTime(startDate.Year, startDate.Month, startDate.Day, startDate.Hour, tenthsOfMinutes * CandlePeriod, 0).AddMinutes(
-                    -MaxNbOfUpCandles);
-            Candle lastCandle = null;
-            for (var i = 0; i < MaxNbOfUpCandles; i++)
-            {
-                if (lastCandle == null)
-                {
-                    lastCandle = new Candle(1.3000m - 0.0015m, 1.3000m + 0.0020m, 1.3000m - 0.0020m, 1.3000m + 0.0015m, startDate);
-                    yield return lastCandle;
-                }
-
-                var upPips = this.randomRateGenerator.Next(10, 20) / 10000m;
-                lastCandle = new Candle(lastCandle.Close,
-                    lastCandle.Close + 0.0020m + upPips,
-                    lastCandle.Close - 0.001m,
-                    lastCandle.Close + 0.0015m + upPips,
-                    startDate);
-                yield return lastCandle;
-
-                startDate = startDate.AddMinutes(CandlePeriod);
-            }
-
-            for (var i = 0; i < MaxNbOfDownCandles; i++)
-            {
-                if (lastCandle == null)
-                {
-                    lastCandle = new Candle(1.3000m - 0.0015m, 1.3000m + 0.0020m, 1.3000m - 0.0020m, 1.3000m + 0.0015m, startDate);
-                    yield return lastCandle;
-                }
-
-                var downPips = this.randomRateGenerator.Next(10, 20) / 10000m;
-                lastCandle = new Candle(lastCandle.Close,
-                    lastCandle.Close + 0.0005m,
-                    lastCandle.Close - 0.020m - downPips,
-                    lastCandle.Close - 0.0015m - downPips,
-                    startDate);
-                yield return lastCandle;
-            }
-        }
-
-        #endregion
+        //No slipage, no spread, instant execution
     }
 }

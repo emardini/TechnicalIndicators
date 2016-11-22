@@ -127,7 +127,7 @@
             return Uri.EscapeDataString(thatTime.ToUniversalTime().ToString(DateFormat));
         }
 
-        public virtual Trade GetOpenTrade(int accountId)
+        public virtual Trade GetOpenTrade(int accountId, string instrument = null)
         {
             var response =
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
@@ -161,7 +161,7 @@
             return rate;
         }
 
-        public virtual bool HasOpenOrder(int accountId)
+        public virtual bool HasOpenOrder(int accountId, string instrument = null)
         {
             var response =
                 this.proxy.GetOrderListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;
@@ -169,7 +169,7 @@
             return response.Any();
         }
 
-        public virtual bool HasOpenTrade(int accountId)
+        public virtual bool HasOpenTrade(int accountId, string instrument = null)
         {
             var response =
                 this.proxy.GetTradeListAsync(accountId, new Dictionary<string, string> { { "count", "1" } }).Result;

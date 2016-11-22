@@ -1,8 +1,9 @@
 *	~~Check halted state~~
+*   Find a way to select pairs to trade in a daily or weekly basis
 *   Modify calculation of position sizing to have crosses with the account balance in USD
+*   Using the ATR as a filter: The average range is also a good indicator to use for filtering out trades. Traders typically need volatility to make any money so if you have a system that generates lots of different signals, you can filter out those ones that are low in volatility by discarding those with a low ATR. Concentrating on markets with the highest ATR’s mean you can trade the markets that are experiencing the most movement and therefore the most profit potential.
 *   Explore partially close positions that hits a certain target
 *   Open chance to trade an instrument if there is no current risk
-*   Modify get candles to get candles between dates
 *   Save candle data to database using days, hours, 15, 5, 1 minute and 5 seconds
 *   Modify backtester to separate from rates adapter
 *   Use backtester to identify issues with slow entries
@@ -14,7 +15,7 @@
 *   When calculating position size, decrease the risk amount using the spread taking into account that in case of a stop, the stop is calculated with the same price the order as placed and not with the opposite price. 
 *   Add agents for 30 and 60 minutes on the four pairs: 8 more agents and accounts
 *       ~~In mondays take the candles from friday~~
-*   The decision on closing or modify order depends on new candles, but when there is an open trade, there are no new candles, should modify the procedure to get candles first and then handle the open trade. it will be necesary now to decide what to do if no new candles or prices are coming
+*   ~~The decision on closing or modify order depends on new candles, but when there is an open trade, there are no new candles, should modify the procedure to get candles first and then handle the open trade. it will be necesary now to decide what to do if no new candles or prices are coming~~
 *   ~~In mondays take the candles from friday~~
 *   ~~Check why the job was stuck in getting candles~~
 *   Investigate why the risk strategy allowed for a loss bigger than the max risk
@@ -25,14 +26,14 @@
 *   Look for an option to Oanda to keep alternatives open
 *   Hide connection strings and azure settings and put it in configuration
 *   ~~Need to allow for a job to execute if there is an open order~~
-*   Change logic to prioritize close/modify order in case of unstable conditions
+*   ~~Change logic to prioritize close/modify order in case of unstable conditions~~
 *	Health monitoring, alerts and logging (important events, traces)
 *	Add rates, candles, orders and results in permanent store for backtesting, complaints and debugging
 *	~~Verify rates and candles completion~~
 	*	~~Make check rates call get last candle~~
 	*	~~Prevent adding repeated candles~~
 	*	~~Complete missing candles~~
-*	Compare adx calculation against other systems: in progress, seems good with visual inspection
+*	Compare adx calculation against other systems: in progress, seems good with visual inspection: USE QUANT CONNECT
 *	Add retries to get values or execute orders
 *	Expose configuration
 	*	Enable/disable auto transactions
@@ -71,3 +72,8 @@
 *   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
 *   Develop a mean reversion strategy (https://www.quantopian.com/posts/trading-strategy-mean-reversion, https://www.dukascopy.com/fxcomm/fx-article-contest/?Mean-Reversion-Trading-Strategy=&action=read&id=2503&language=en)
 *   Decide on how to share the balance between several strategies
+*   http://tradingmarkets.com/recent/how_to_use__average_true_range_for_short-term_trading-677507.html
+*   http://www.forexfactory.com/showthread.php?p=5326183
+*   http://www.investopedia.com/articles/trading/08/atr.asp
+
+

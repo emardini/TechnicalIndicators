@@ -19,6 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackTestAdapterConsole", "B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{36B64217-9786-4600-B2D8-C7CC923AC1D5}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\Forex\chucklebeau-071410.pdf = ..\..\Forex\chucklebeau-071410.pdf
 		ToDo.md = ToDo.md
 	EndProjectSection
 EndProject

@@ -474,7 +474,7 @@
         public bool IsTradingTime()
         {
             var currentDate = this.dateProvider.GetCurrentEastDateTimeDate();
-            return currentDate.Hour >= 4 && currentDate.Hour <= 15;
+            return currentDate.Hour >= 2 && currentDate.Hour <= 15;
         }
 
         #endregion
