@@ -1,8 +1,5 @@
 ﻿namespace TechnicalIndicators
 {
-    using System;
-    using System.Collections.Generic;
-
     public interface ITradingAdapter
     {
         bool HasOpenOrder(int accountId, string instrument = null);

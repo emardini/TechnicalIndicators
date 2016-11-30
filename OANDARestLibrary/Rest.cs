@@ -754,7 +754,7 @@
             }
             var request = WebRequest.CreateHttp(requestString);
             request.Headers[HttpRequestHeader.Authorization] = "Bearer " + this.accessToken;
-            request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
+            //request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
             request.Method = method;
 
             try
@@ -763,6 +763,7 @@
                 {
                     var serializer = new DataContractJsonSerializer(typeof(T));
                     var stream = GetResponseStream(response);
+
                     return (T)serializer.ReadObject(stream);
                 }
             }

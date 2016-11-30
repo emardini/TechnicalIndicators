@@ -355,7 +355,7 @@
                 return;
             }
 
-            var currentSpread = Math.Abs(newRate.Ask - newRate.Bid) * (1.00m / GetPipFraction(newRate.QuoteCurrency));
+            var currentSpread = Math.Abs(newRate.Ask - newRate.Bid) * (1.00m / newRate.QuoteCurrency.GetPipFraction());
             if (currentSpread > MaxSpread)
             {
                 Trace.TraceInformation($"Not enough liquidity, spread = {currentSpread}");
@@ -501,11 +501,6 @@
             return currentCandle.Close < previousCandle.Close;
         }
 
-        private static decimal GetPipFraction(string quoteCurrency)
-        {
-            return quoteCurrency == "JPY" ? 0.01M : 0.0001m;
-        }
-
         private static Threshold GetThreshold()
         {
             return new Threshold { Body = 0.1m, Delta = 0.0003m };
@@ -544,7 +539,7 @@
             var balance = accountInformation.Balance.SafeParseDecimal().GetValueOrDefault();
             var maxRiskAmount = balance * BaseRiskPercentage;
 
-            var pipFraction = GetPipFraction(currentRate.QuoteCurrency);
+            var pipFraction = currentRate.QuoteCurrency.GetPipFraction();
 
             var useRate = side == OrderSideBuy ? currentRate.Ask : currentRate.Bid;
             //Instead of hardcoding the account currency, better to read it from the api.
@@ -568,7 +563,7 @@
 
         private decimal CalculateStopLossDistanceInPips(string side, string quoteCurrency, Rate currentRate)
         {
-            var pipFraction = GetPipFraction(quoteCurrency);
+            var pipFraction = quoteCurrency.GetPipFraction();
             if (side == OrderSideBuy)
             {
                 var lowLimit = this.fastEmaLow.Values.LastOrDefault();
@@ -697,7 +692,7 @@
                 return false;
             }
 
-            var pipFraction = GetPipFraction(currentTrade.QuoteCurrency);
+            var pipFraction = currentTrade.QuoteCurrency.GetPipFraction();
             decimal? spreadPips = (currentRate.Ask - currentRate.Bid) / (2 * pipFraction);
             var cushionDeltaPrice = (spreadPips + SlippagePips + MarginalGainPips) * pipFraction;
             switch (currentTrade.Side)

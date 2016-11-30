@@ -2,6 +2,7 @@
 {
     using System;
     using System.Cobra;
+    using System.Collections.Generic;
     using System.Diagnostics;
 
     using BrokerAdapter.Oanda;
@@ -12,6 +13,8 @@
 
     using TechnicalIndicators;
     using System.Configuration;
+    using System.Linq;
+
     // To learn more about Microsoft Azure WebJobs SDK, please see http://go.microsoft.com/fwlink/?LinkID=320976
     internal class Program
     {
@@ -31,7 +34,7 @@
               "https://stream-fxpractice.oanda.com/v1/",
               "https://api-fxpractice.oanda.com/labs/v1/",
               token);
-
+            var instrument = "EUR_GBP";
             container.Bind<Cobra>()
                 .ToConstant(new Cobra(new Adx(14),
                     new Ema(12),
@@ -39,12 +42,28 @@
                     new Sma(72),
                     new Sma(72),
                     new SimpleDateProvider(),
-                    "GBP_EUR",
+                    instrument,
                     15,
                     adapter,
                     adapter,
                     account))
                 .InSingletonScope();
+
+            var initialCandles = adapter.GetLastCandles(instrument, 15, 72).ToList();
+            var strategy = container.TryGet<Cobra>();
+            if (strategy == null)
+            {
+                return;
+            }
+
+            try
+            {
+                strategy.AddCandles(initialCandles);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+            }
 
             container.Bind<IRateProvider>()
                 .ToConstant(adapter)

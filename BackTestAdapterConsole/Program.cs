@@ -39,19 +39,11 @@
                 accountKey);
 
             var candles = ratesProvider.GetLastCandles(Instrument, periodInMinutes, 500).ToList();
-            var backTestAdapter = new HistoricalBackTestAdapter("https://api-fxpractice.oanda.com/v1/",
-                "https://api-fxpractice.oanda.com/v1/",
-                "https://stream-fxpractice.oanda.com/v1/",
-                "https://stream-fxpractice.oanda.com/v1/",
-                "https://api-fxpractice.oanda.com/labs/v1/",
-                accountKey,
-                5,
-                candles,
-                candles.OrderBy(x => x.Timestamp).First().Timestamp);
+            var backTestAdapter = new BackTestAdapter();
 
 
             var ticks = ratesProvider.GetLastCandles(Instrument, 1, 4999).ToList();
-            backTestAdapter.Reset();
+
             var system = new Cobra(new Adx(14),
                 new Ema(12),
                 new Ema(12),
@@ -61,14 +53,14 @@
                 Instrument,
                 periodInMinutes,
                 backTestAdapter,
-                backTestAdapter,
+                ratesProvider,
                 0,
                 true);
 
             var initialCandles = candles.Take(72).ToList();
             system.AddCandles(initialCandles);
             foreach (var tick in ticks.Where(x=> x.Timestamp >= initialCandles.Last().Timestamp))
-            {
+            {              
                 var candle = candles.FirstOrDefault(x => tick.Timestamp >= x.Timestamp && tick.Timestamp < x.Timestamp.AddMinutes(periodInMinutes));
                 if (candle != null)
                 {

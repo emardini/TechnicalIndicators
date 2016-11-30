@@ -10,9 +10,9 @@
     {
         #region Constants
 
-        private const decimal DolarsByPip = 0.0001m;
-
         private const string OrderSideBuy = "buy";
+
+        private const decimal DebouncingLimit = 0.00001m;
 
         #endregion
 
@@ -22,7 +22,9 @@
 
         private readonly List<Trade> trades = new List<Trade>();
 
-        private decimal balancePips;
+        private Rate currentRate;
+
+        private Rate currentAccountCurrencyRate;
 
         #endregion
 
@@ -31,7 +33,16 @@
         public void CloseTrade(int accountId, long tradeId)
         {
             //TODO : CALCULATE NEW BALANCE
-            this.trades.RemoveAll(x => x.Id == tradeId && x.AccountId == accountId);
+            var trade = this.trades.FirstOrDefault(x => x.Id == tradeId && x.AccountId == accountId);
+            if(trade == null)
+                return;
+
+            if (this.currentRate == null || this.currentAccountCurrencyRate == null)
+            {
+                return;                
+            }
+
+            this.LiquidateTrade(this.currentRate, this.currentAccountCurrencyRate, trade, trade.Price);
         }
 
         public AccountInformation GetAccountInformation(int accountId)
@@ -73,12 +84,13 @@
             });
         }
 
-        public void SetRate(Rate newRate)
+        public void SetRate(Rate newRate, Rate accountCurrencyRate)
         {
-            //TODO: Calculate pip fraction to support YEN
-            //TODO: Update balance
             //TODO: Check margin call
             //TODO: Handle error on leverage and insuficient funds
+            //TODO: Handle target profit
+            this.currentRate = newRate;
+            this.currentAccountCurrencyRate = accountCurrencyRate;
 
             var currentTrade = this.trades.FirstOrDefault();
             if (currentTrade == null)
@@ -87,61 +99,90 @@
             }
 
             decimal amountToCompare;
-            if (currentTrade.Side == OrderSideBuy)
+            if (currentTrade.Side == OrderSideBuy) //In case of a long trade
             {
                 if (currentTrade.TrailingStop > 0)
                 {
-                    var newTrailingAmount = newRate.Bid - currentTrade.TrailingStop * 0.0001m;
+                    var newTrailingAmount = newRate.Bid - currentTrade.TrailingStop * newRate.QuoteCurrency.GetPipFraction();
 
                     currentTrade.TrailingAmount = newTrailingAmount >= currentTrade.TrailingAmount
                         ? newTrailingAmount
                         : currentTrade.TrailingAmount;
                     amountToCompare = currentTrade.TrailingAmount;
                 }
-                else
+                else if (currentTrade.StopLoss > 0)
                 {
                     currentTrade.TrailingAmount = 0;
                     amountToCompare = currentTrade.StopLoss;
                 }
+                else
+                {
+                    amountToCompare = 0; //TODO: To code a strategy without stops
+                }
             }
-            else
+            else  //In case of short trade
             {
                 if (currentTrade.TrailingStop > 0)
                 {
-                    var newTrailingAmount = newRate.Ask + currentTrade.TrailingStop * 0.0001m;
+                    var newTrailingAmount = newRate.Ask + currentTrade.TrailingStop * newRate.QuoteCurrency.GetPipFraction();
                     currentTrade.TrailingAmount = newTrailingAmount < currentTrade.TrailingAmount
                         ? newTrailingAmount
                         : currentTrade.TrailingAmount;
                     amountToCompare = currentTrade.TrailingAmount;
                 }
-                else
+                else if (currentTrade.StopLoss > 0)
                 {
                     currentTrade.TrailingAmount = 0;
                     amountToCompare = currentTrade.StopLoss;
                 }
+                else
+                {
+                    amountToCompare = 0;
+                }
             }
 
+            this.LiquidateTrade(newRate, accountCurrencyRate, currentTrade, amountToCompare);
+        }
+
+        private void LiquidateTrade(Rate newRate, Rate accountCurrencyRate, Trade currentTrade, decimal referencePrice)
+        {
             var gainLoss = 0m;
             if (currentTrade.Side == OrderSideBuy)
             {
-                if (newRate.Bid >= amountToCompare) return;
+                if ((newRate.Bid - referencePrice) > DebouncingLimit) return;
 
-                gainLoss = (currentTrade.Price - amountToCompare) / DolarsByPip;
-                Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
-                this.balancePips += gainLoss * currentTrade.Units * DolarsByPip;
-                Console.WriteLine("{1} - Balance = {0}", this.balancePips, currentTrade.Time);
-                this.trades.Remove(currentTrade);
+                gainLoss = referencePrice - currentTrade.Price;
             }
             else
             {
-                if (newRate.Ask <= amountToCompare) return;
+                if (referencePrice - newRate.Ask > DebouncingLimit) return;
 
-                gainLoss = (amountToCompare - currentTrade.Price) / DolarsByPip;
-                Console.WriteLine("Stop loss triggered=>Gain/Loss={0}", gainLoss);
-                this.balancePips += gainLoss * currentTrade.Units * DolarsByPip;
-                Console.WriteLine("{1} - Balance = {0}", this.balancePips, currentTrade.Time);
-                this.trades.Remove(currentTrade);
+                gainLoss = currentTrade.Price - referencePrice;
             }
+
+            Console.WriteLine("Stop loss triggered=>Gain/Loss={0} pips", gainLoss / newRate.QuoteCurrency.GetPipFraction());
+            var gainLossInQuoteCurrency = gainLoss * currentTrade.Units;
+            var gainLossConversionRate = this.GetAccountCurrencyRate(newRate, accountCurrencyRate);
+            this.accountInformation.Balance += gainLossInQuoteCurrency * gainLossConversionRate;
+            Console.WriteLine("{1} - Balance = {0}", this.accountInformation.Balance, currentTrade.Time);
+            this.trades.Remove(currentTrade);
+        }
+
+        private decimal GetAccountCurrencyRate(Rate newRate, Rate accountCurrencyRate)
+        {
+            var quoteInstrument = newRate.QuoteCurrency.Safe().Trim().ToUpper();
+            var baseInstrument = this.accountInformation.AccountCurrency.Safe().Trim().ToUpper();
+
+            if (quoteInstrument == baseInstrument) return 1.00m;
+            
+
+            var price = (accountCurrencyRate.Ask + accountCurrencyRate.Bid)/2.00m;
+            if (accountCurrencyRate.BaseCurrency == this.accountInformation.AccountCurrency)
+            {
+                return 1.00m / price;
+            }
+
+            return price;
         }
 
         public void UpdateTrade(Trade updatedTrade)
@@ -154,7 +195,7 @@
 
             trade.StopLoss = updatedTrade.StopLoss;
             trade.TakeProfit = updatedTrade.TakeProfit;
-            trade.TrailingAmount = updatedTrade.TrailingAmount;
+            trade.TrailingStop = updatedTrade.TrailingStop;
         }
 
         #endregion

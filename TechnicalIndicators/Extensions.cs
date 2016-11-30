@@ -12,6 +12,11 @@
             return list.Reverse().Take(nbOfItems);
         }
 
+        public static decimal GetPipFraction(this string quoteCurrency)
+        {
+            return quoteCurrency == "JPY" ? 0.01m : 0.0001m;
+        }
+
         #endregion
     }
 }
