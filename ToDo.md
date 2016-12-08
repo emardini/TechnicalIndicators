@@ -1,5 +1,6 @@
 *	~~Check halted state~~
 *   Investigate best practices on trade and risk management
+*   Move configuration to azure web site
 *   Find a way to select pairs to trade in a daily or weekly basis
 *   Keltner channels strategy: http://www.onlinefinancialmarkets.com/futures-trading-system.html
     Compare current atr vs a moving average of atr to decide on increase of volatility
