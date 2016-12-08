@@ -53,6 +53,8 @@
   <ItemGroup>
     <Compile Include="AdxTest.cs" />
     <Compile Include="EmaTest.cs" />
+    <Compile Include="CandleBuilderTest.cs" />
+    <Compile Include="ExtensionsTest.cs" />
     <Compile Include="SmaTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

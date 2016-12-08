@@ -1,5 +1,8 @@
 *	~~Check halted state~~
+*   Investigate best practices on trade and risk management
 *   Find a way to select pairs to trade in a daily or weekly basis
+*   Keltner channels strategy: http://www.onlinefinancialmarkets.com/futures-trading-system.html
+    Compare current atr vs a moving average of atr to decide on increase of volatility
 *   Modify calculation of position sizing to have crosses with the account balance in USD
 *   Check why in big trends, the exit seems like not working
 *   Add max allowable spread and schedule constraints as a parameter

@@ -15,6 +15,8 @@
 
         public decimal Bid { get; set; }
 
+        public decimal MidPoint { get { return (Bid + Ask) / 2.0m; } }
+
         public string Instrument { get; set; }
 
         public string QuoteCurrency

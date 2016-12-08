@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="AccountInformation.cs" />
     <Compile Include="Adx.cs" />
+    <Compile Include="CandleBuilder.cs" />
     <Compile Include="Candle.cs">
       <SubType>Code</SubType>
     </Compile>

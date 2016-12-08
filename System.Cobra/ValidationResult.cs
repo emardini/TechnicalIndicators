@@ -38,5 +38,10 @@ namespace System.Cobra
         {
             return $"IsValid:{this.IsValid}, ErrorMessages:[{string.Join(",", this.ErrorMessages)}]";
         }
+
+        public void Clear()
+        {
+            errorMessages.Clear();
+        }
     }
 }

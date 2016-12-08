@@ -61,6 +61,10 @@
 
         private readonly ITradingAdapter tradingAdapter;
 
+        private readonly CandleBuilder candleBuilder;
+
+        private ValidationResult validations = new ValidationResult();
+
         #endregion
 
         #region Constructors and Destructors
@@ -76,7 +80,8 @@
             ITradingAdapter tradingAdapter,
             IRateProvider rateProvider,
             int accountId,
-            bool isbacktesting = false)
+            bool isbacktesting = false,
+            IEnumerable<Candle> initialCandles = null)
         {
             if (adx == null)
             {
@@ -106,10 +111,6 @@
             {
                 throw new ArgumentNullException(nameof(tradingAdapter));
             }
-            if (rateProvider == null)
-            {
-                throw new ArgumentNullException(nameof(rateProvider));
-            }
             if (string.IsNullOrWhiteSpace(instrument))
             {
                 throw new ArgumentNullException(nameof(instrument));
@@ -128,18 +129,37 @@
             this.isbacktesting = isbacktesting;
             this.PeriodInMinutes = periodInMinutes;
 
-            var initialCandles = rateProvider.GetLastCandles(instrument, periodInMinutes, MinNbOfCandles).ToList();
-            this.candles = new List<Candle>();
-            try
+            if (!(initialCandles?.Any()).GetValueOrDefault(false) && rateProvider != null)
             {
-                this.AddCandles(initialCandles);
+                var _initialCandles = rateProvider.GetLastCandles(instrument, periodInMinutes, MinNbOfCandles).ToList();
+                this.candles = new List<Candle>();
+                try
+                {
+                    this.AddCandles(initialCandles);
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError(ex.ToString());
+                }
             }
-            catch (Exception ex)
+            else if (rateProvider == null)
             {
-                Trace.TraceError(ex.ToString());
+                throw new ArgumentNullException(nameof(rateProvider));
             }
 
             this.Id = Guid.NewGuid().ToString();
+
+            candleBuilder = new CandleBuilder(TimeSpan.FromMinutes(periodInMinutes));
+            candleBuilder.NewCandleCreated += (o, e) => {
+                try
+                {
+                    this.AddCandle(e.NewCandle);
+                }
+                catch(Exception ex)
+                {
+                    validations.AddErrorMessage(ex.Message);
+                }                
+            };
         }
 
         #endregion
@@ -254,8 +274,8 @@
         public void CheckRate(Rate newRate)
         {
             Trace.CorrelationManager.ActivityId = Guid.NewGuid();
-
-            var validations = new ValidationResult();
+            validations.Clear();
+            
             if (this.CurrentRate != null && newRate.Time < this.CurrentRate.Time)
             {
                 //This is likely to happen in a backtest or practice scenario                 
@@ -265,6 +285,8 @@
             {
                 this.CurrentRate = newRate;
             }
+
+            candleBuilder.AddRate(newRate);
 
             Trace.TraceInformation("New rate : {0}", JsonConvert.SerializeObject(newRate));
 
