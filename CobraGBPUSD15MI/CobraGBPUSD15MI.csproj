@@ -101,7 +101,8 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\forextradinghost.pubxml" />
+    <None Include="Properties\PublishProfiles\forextradinghost - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\forextradinghost - Web Deploy.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
