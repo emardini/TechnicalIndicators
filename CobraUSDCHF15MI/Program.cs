@@ -61,7 +61,9 @@
                     periodInMinutes,
                     adapter,
                     adapter,
-                    account))
+                    account,
+                    false,
+                    lastCandles))
                 .InSingletonScope();      
          
             var test = container.TryGet<Cobra>();

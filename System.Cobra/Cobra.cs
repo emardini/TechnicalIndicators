@@ -128,11 +128,12 @@
             this.AccountId = accountId;
             this.isbacktesting = isbacktesting;
             this.PeriodInMinutes = periodInMinutes;
+            this.candles = new List<Candle>();
 
             if (!(initialCandles?.Any()).GetValueOrDefault(false) && rateProvider != null)
             {
                 var _initialCandles = rateProvider.GetLastCandles(instrument, periodInMinutes, MinNbOfCandles).ToList();
-                this.candles = new List<Candle>();
+                
                 try
                 {
                     this.AddCandles(initialCandles);
@@ -141,6 +142,10 @@
                 {
                     Trace.TraceError(ex.ToString());
                 }
+            }
+            else if ((initialCandles?.Any()).GetValueOrDefault(false))
+            {
+                this.AddCandles(initialCandles);
             }
             else if (rateProvider == null)
             {
