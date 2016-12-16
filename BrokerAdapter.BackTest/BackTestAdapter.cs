@@ -1,5 +1,6 @@
 ﻿namespace BrokerAdapter.BackTest
 {
+    using GeorgeCloney;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -32,7 +33,6 @@
 
         public void CloseTrade(int accountId, long tradeId)
         {
-            //TODO : CALCULATE NEW BALANCE
             var trade = this.trades.FirstOrDefault(x => x.Id == tradeId && x.AccountId == accountId);
             if(trade == null)
                 return;
@@ -47,8 +47,7 @@
 
         public AccountInformation GetAccountInformation(int accountId)
         {
-            //TODO: Return a copy
-            return this.accountInformation;
+            return this.accountInformation.DeepClone();
         }
 
         public Trade GetOpenTrade(int accountId, string instrument = null)
