@@ -1,4 +1,6 @@
 *	~~Check halted state~~
+*   Observed that for some pairs I'm frequently putting orders that get stopped very early in the morning, I should use that as a patterns
+*   I observe the adx sometimes creates a plateau and the bars stale in a range, should exit early, mybe using an adx with lower period, like 7
 *   Investigate best practices on trade and risk management
 *   Move configuration to azure web site
 *   Find a way to select pairs to trade in a daily or weekly basis
